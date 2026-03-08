@@ -62,7 +62,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return !error;
+    if (error) {
+      // Auto-create demo accounts on first login attempt
+      const isDemoAccount = (email === "student@demo.com" || email === "teacher@demo.com") && password === "123456";
+      if (isDemoAccount) {
+        const name = email === "teacher@demo.com" ? "Teacher Admin" : "Demo Student";
+        const { error: signUpError } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+        if (signUpError) return false;
+        // If teacher, add admin role after a brief delay for the trigger
+        if (email === "teacher@demo.com") {
+          setTimeout(async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await supabase.from("user_roles").insert({ user_id: user.id, role: "admin" as any });
+            }
+          }, 500);
+        }
+        return true;
+      }
+      return false;
+    }
+    return true;
   };
 
   const signup = async (email: string, password: string, name: string): Promise<boolean> => {
