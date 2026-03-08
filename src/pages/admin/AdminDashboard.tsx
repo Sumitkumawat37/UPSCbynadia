@@ -1,25 +1,27 @@
 import { Card } from "@/components/ui/card";
-import { students, courses, quizzes, announcements, liveClasses, lectures, doubts } from "@/lib/mock-data";
+import { useCourses, useLectures, useQuizzes, useAnnouncements, useDoubts, useProfiles } from "@/lib/supabase-data";
 import { Users, BookOpen, Trophy, Megaphone, TrendingUp, Video, MessageCircle, ShoppingCart } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useNavigate } from "react-router-dom";
 
 const studentActivityData = [
-  { day: "Mon", active: 42 },
-  { day: "Tue", active: 38 },
-  { day: "Wed", active: 55 },
-  { day: "Thu", active: 47 },
-  { day: "Fri", active: 62 },
-  { day: "Sat", active: 30 },
-  { day: "Sun", active: 25 },
+  { day: "Mon", active: 42 }, { day: "Tue", active: 38 }, { day: "Wed", active: 55 },
+  { day: "Thu", active: 47 }, { day: "Fri", active: 62 }, { day: "Sat", active: 30 }, { day: "Sun", active: 25 },
 ];
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { data: courses = [] } = useCourses();
+  const { data: lectures = [] } = useLectures();
+  const { data: quizzes = [] } = useQuizzes();
+  const { data: announcements = [] } = useAnnouncements();
+  const { data: doubts = [] } = useDoubts();
+  const { data: profiles = [] } = useProfiles();
+
   const pendingDoubts = doubts.filter((d) => !d.reply).length;
 
   const stats = [
-    { icon: Users, label: "Students", value: students.length, color: "text-primary", bg: "bg-primary/10", to: "/admin/students" },
+    { icon: Users, label: "Students", value: profiles.length, color: "text-primary", bg: "bg-primary/10", to: "/admin/students" },
     { icon: BookOpen, label: "Courses", value: courses.length, color: "text-info", bg: "bg-info/10", to: "/admin/content" },
     { icon: Trophy, label: "Quizzes", value: quizzes.length, color: "text-warning", bg: "bg-warning/10", to: "/admin/quizzes" },
     { icon: Video, label: "Lectures", value: lectures.length, color: "text-success", bg: "bg-success/10", to: "/admin/content" },
@@ -33,14 +35,9 @@ const AdminDashboard = () => {
         <h2 className="text-xl font-bold">Teacher Dashboard</h2>
         <p className="text-muted-foreground text-sm">Welcome back, Teacher Admin</p>
       </div>
-
       <div className="grid grid-cols-3 gap-3">
         {stats.map((s) => (
-          <Card
-            key={s.label}
-            className="p-3 text-center cursor-pointer hover:card-shadow-lg transition-shadow"
-            onClick={() => navigate(s.to)}
-          >
+          <Card key={s.label} className="p-3 text-center cursor-pointer hover:card-shadow-lg transition-shadow" onClick={() => navigate(s.to)}>
             <div className={`w-9 h-9 rounded-xl ${s.bg} flex items-center justify-center mx-auto mb-1`}>
               <s.icon className={`w-4 h-4 ${s.color}`} />
             </div>
@@ -49,7 +46,6 @@ const AdminDashboard = () => {
           </Card>
         ))}
       </div>
-
       <Card className="p-4">
         <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-primary" /> Student Activity (This Week)
@@ -63,39 +59,28 @@ const AdminDashboard = () => {
           </BarChart>
         </ResponsiveContainer>
       </Card>
-
-      {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-3">
-        <Card
-          className="p-3 text-center cursor-pointer hover:card-shadow-lg transition-shadow"
-          onClick={() => navigate("/admin/access")}
-        >
+        <Card className="p-3 text-center cursor-pointer hover:card-shadow-lg transition-shadow" onClick={() => navigate("/admin/access")}>
           <ShoppingCart className="w-5 h-5 text-primary mx-auto mb-1" />
           <p className="text-xs font-medium">Course Access</p>
         </Card>
-        <Card
-          className="p-3 text-center cursor-pointer hover:card-shadow-lg transition-shadow"
-          onClick={() => navigate("/admin/live")}
-        >
+        <Card className="p-3 text-center cursor-pointer hover:card-shadow-lg transition-shadow" onClick={() => navigate("/admin/live")}>
           <Video className="w-5 h-5 text-success mx-auto mb-1" />
           <p className="text-xs font-medium">Live Classes</p>
         </Card>
       </div>
-
-      {/* Recent Students */}
       <Card className="p-4">
         <h3 className="font-semibold text-sm mb-3">Recent Students</h3>
         <div className="space-y-2">
-          {students.slice(0, 3).map((s) => (
+          {profiles.slice(0, 3).map((s) => (
             <div key={s.id} className="flex items-center gap-3 py-1.5">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                {s.name.split(" ").map((n) => n[0]).join("")}
+                {s.name?.split(" ").map((n: string) => n[0]).join("") || "?"}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{s.name}</p>
-                <p className="text-xs text-muted-foreground">{s.lastActive}</p>
+                <p className="text-xs text-muted-foreground">{s.email}</p>
               </div>
-              <span className="text-xs font-medium text-primary">{s.avgScore}%</span>
             </div>
           ))}
         </div>
