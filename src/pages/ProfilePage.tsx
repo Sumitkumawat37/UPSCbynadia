@@ -2,21 +2,31 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
-import { courses, performanceData, lectures, quizzes } from "@/lib/mock-data";
+import { usePurchase } from "@/lib/purchase-context";
+import { useCourses, useQuizAttempts, useLectureProgress } from "@/lib/supabase-data";
 import { useNavigate } from "react-router-dom";
-import { User, Mail, BookOpen, Trophy, TrendingUp, LogOut, ChevronRight, Video, CheckCircle } from "lucide-react";
+import { User, Mail, BookOpen, Trophy, Video, CheckCircle, ChevronRight, LogOut } from "lucide-react";
 
 const ProfilePage = () => {
   const { user, role, logout } = useAuth();
   const navigate = useNavigate();
+  const { purchasedCourses } = usePurchase();
+  const { data: courses = [] } = useCourses();
+  const { data: attempts = [] } = useQuizAttempts();
+  const { data: progress = [] } = useLectureProgress();
 
-  const avgScore = Math.round(performanceData.reduce((a, b) => a + b.score, 0) / performanceData.length);
-  const completedLectures = lectures.filter((l) => l.completed).length;
-  const completedQuizzes = quizzes.filter((q) => q.status === "completed").length;
+  const completedLectures = progress.filter((p) => p.completed).length;
+  const avgScore = attempts.length > 0
+    ? Math.round(attempts.reduce((a, b) => a + (b.total > 0 ? (b.score / b.total) * 100 : 0), 0) / attempts.length)
+    : 0;
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
 
   return (
     <div className="space-y-4 animate-slide-up">
-      {/* Profile Header */}
       <Card className="p-5 text-center">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
           <User className="w-8 h-8 text-primary" />
@@ -28,11 +38,10 @@ const ProfilePage = () => {
         <Badge className="mt-2">{role === "admin" ? "Teacher / Admin" : "Student"}</Badge>
       </Card>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <Card className="p-3 text-center">
           <BookOpen className="w-5 h-5 text-primary mx-auto mb-1" />
-          <p className="text-lg font-bold">{courses.filter((c) => !c.locked).length}</p>
+          <p className="text-lg font-bold">{purchasedCourses.length}</p>
           <p className="text-[10px] text-muted-foreground">Courses</p>
         </Card>
         <Card className="p-3 text-center">
@@ -47,12 +56,11 @@ const ProfilePage = () => {
         </Card>
         <Card className="p-3 text-center">
           <CheckCircle className="w-5 h-5 text-success mx-auto mb-1" />
-          <p className="text-lg font-bold">{completedQuizzes}</p>
+          <p className="text-lg font-bold">{attempts.length}</p>
           <p className="text-[10px] text-muted-foreground">Quizzes Done</p>
         </Card>
       </div>
 
-      {/* Menu */}
       <div className="space-y-1">
         {[
           { label: "My Dashboard", to: "/dashboard" },
@@ -61,22 +69,14 @@ const ProfilePage = () => {
           { label: "My Doubts", to: "/doubts" },
           { label: "Notifications", to: "/notifications" },
         ].map((item) => (
-          <Card
-            key={item.to}
-            className="p-3 flex items-center justify-between cursor-pointer hover:bg-accent/50"
-            onClick={() => navigate(item.to)}
-          >
+          <Card key={item.to} className="p-3 flex items-center justify-between cursor-pointer hover:bg-accent/50" onClick={() => navigate(item.to)}>
             <span className="text-sm font-medium">{item.label}</span>
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </Card>
         ))}
       </div>
 
-      <Button
-        variant="destructive"
-        className="w-full"
-        onClick={() => { logout(); navigate("/login"); }}
-      >
+      <Button variant="destructive" className="w-full" onClick={handleLogout}>
         <LogOut className="w-4 h-4 mr-2" /> Log Out
       </Button>
     </div>
