@@ -1,21 +1,22 @@
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { announcements } from "@/lib/mock-data";
-import { Bell, Info, CheckCircle, AlertTriangle } from "lucide-react";
+import { useAnnouncements } from "@/lib/supabase-data";
+import { Info, CheckCircle, AlertTriangle } from "lucide-react";
 
-const iconMap = {
+const iconMap: Record<string, typeof Info> = {
   info: Info,
   success: CheckCircle,
   warning: AlertTriangle,
 };
 
 const NotificationsPage = () => {
+  const { data: announcements = [] } = useAnnouncements();
+
   return (
     <div className="space-y-4 animate-slide-up">
       <h2 className="text-xl font-bold">Notifications</h2>
       <div className="space-y-2">
         {announcements.map((a, i) => {
-          const Icon = iconMap[a.type];
+          const Icon = iconMap[a.type] || Info;
           return (
             <Card key={a.id} className="p-4" style={{ animationDelay: `${i * 60}ms` }}>
               <div className="flex items-start gap-3">
@@ -29,7 +30,7 @@ const NotificationsPage = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <h4 className="font-semibold text-sm">{a.title}</h4>
-                    <span className="text-[10px] text-muted-foreground shrink-0">{a.date}</span>
+                    <span className="text-[10px] text-muted-foreground shrink-0">{new Date(a.created_at).toLocaleDateString()}</span>
                   </div>
                   <p className="text-muted-foreground text-xs mt-1">{a.message}</p>
                 </div>
