@@ -25,6 +25,10 @@ const AdminContent = () => {
   const [courseInstructor, setCourseInstructor] = useState("");
   const [courseEmoji, setCourseEmoji] = useState("📚");
   const [courseThumbnailUrl, setCourseThumbnailUrl] = useState("");
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Chapter form
   const [showChapterForm, setShowChapterForm] = useState(false);
