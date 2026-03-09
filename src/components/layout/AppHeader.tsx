@@ -1,11 +1,11 @@
-import { Bell, GraduationCap, LogOut, ArrowLeftRight } from "lucide-react";
+import { Bell, GraduationCap, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { announcements } from "@/lib/mock-data";
 
 export function AppHeader() {
-  const { user, role, logout, switchRole } = useAuth();
+  const { user, role, logout } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -24,13 +24,6 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => switchRole(role === "admin" ? "student" : "admin")}
-            className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center hover:bg-accent/80 transition-colors"
-            title={`Switch to ${role === "admin" ? "Student" : "Teacher"} view`}
-          >
-            <ArrowLeftRight className="w-4 h-4 text-accent-foreground" />
-          </button>
           <button
             onClick={() => navigate("/notifications")}
             className="relative w-9 h-9 rounded-xl bg-accent flex items-center justify-center hover:bg-accent/80 transition-colors"
