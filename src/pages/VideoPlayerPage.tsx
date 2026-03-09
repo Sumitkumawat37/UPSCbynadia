@@ -10,6 +10,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, CheckCircle, Send, MessageCircle, Lock, Eye, Play } from "lucide-react";
 import { toast } from "sonner";
 
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
+
 const VideoPlayerPage = () => {
   const { courseId, lectureId } = useParams();
   const navigate = useNavigate();
