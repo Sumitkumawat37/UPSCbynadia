@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useCourses, useLectures, useNotes, useChapters } from "@/lib/supabase-data";
-import { useCreateCourse, useDeleteCourse, useCreateChapter, useDeleteChapter, useCreateLecture, useDeleteLecture, useCreateNote, useDeleteNote } from "@/lib/supabase-mutations";
+import { useCreateCourse, useDeleteCourse, useCreateChapter, useDeleteChapter, useCreateLecture, useDeleteLecture, useUpdateLecture, useCreateNote, useDeleteNote } from "@/lib/supabase-mutations";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Video, FileText, Plus, Upload, BookOpen, Eye, Trash2, FolderPlus, ImagePlus } from "lucide-react";
@@ -43,6 +43,10 @@ const AdminContent = () => {
   const [lecCourseId, setLecCourseId] = useState("");
   const [lecChapterId, setLecChapterId] = useState("");
   const [lecFreePreview, setLecFreePreview] = useState(false);
+  const [lecThumbnailFile, setLecThumbnailFile] = useState<File | null>(null);
+  const [lecThumbnailPreview, setLecThumbnailPreview] = useState("");
+  const [lecUploading, setLecUploading] = useState(false);
+  const lecFileInputRef = useRef<HTMLInputElement>(null);
 
   // Note form
   const [showNoteForm, setShowNoteForm] = useState(false);
@@ -64,6 +68,7 @@ const AdminContent = () => {
   const deleteChapter = useDeleteChapter();
   const createLecture = useCreateLecture();
   const deleteLecture = useDeleteLecture();
+  const updateLecture = useUpdateLecture();
   const createNote = useCreateNote();
   const deleteNote = useDeleteNote();
 
@@ -117,18 +122,48 @@ const AdminContent = () => {
     });
   };
 
-  const handleCreateLecture = () => {
+  const handleLecThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setLecThumbnailFile(file);
+    setLecThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  const uploadLecThumbnail = async (): Promise<string | undefined> => {
+    if (!lecThumbnailFile) return undefined;
+    setLecUploading(true);
+    const ext = lecThumbnailFile.name.split(".").pop();
+    const path = `lectures/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("thumbnails").upload(path, lecThumbnailFile);
+    setLecUploading(false);
+    if (error) { toast.error("Upload failed: " + error.message); return undefined; }
+    const { data: urlData } = supabase.storage.from("thumbnails").getPublicUrl(path);
+    return urlData.publicUrl;
+  };
+
+  const handleCreateLecture = async () => {
     if (!lecTitle || !lecYoutubeUrl || !lecCourseId || !lecChapterId) return toast.error("Fill all fields");
+    const thumbUrl = await uploadLecThumbnail();
     const sortOrder = lectures.filter((l) => l.chapter_id === lecChapterId).length;
     createLecture.mutate({
       course_id: lecCourseId, chapter_id: lecChapterId, title: lecTitle,
       youtube_id: lecYoutubeUrl, duration: lecDuration, free_preview: lecFreePreview, sort_order: sortOrder,
-    }, {
+      ...(thumbUrl ? { thumbnail_url: thumbUrl } : {}),
+    } as any, {
       onSuccess: () => {
         toast.success("Lecture added!");
         setShowLectureForm(false);
         setLecTitle(""); setLecYoutubeUrl(""); setLecFreePreview(false);
+        setLecThumbnailFile(null); setLecThumbnailPreview("");
       },
+    });
+  };
+
+  const handleToggleFreePreview = (lectureId: string, currentValue: boolean) => {
+    updateLecture.mutate({ id: lectureId, free_preview: !currentValue }, {
+      onSuccess: () => toast.success(!currentValue ? "Marked as free preview" : "Removed free preview"),
     });
   };
 
@@ -285,6 +320,21 @@ const AdminContent = () => {
                   <Input placeholder="https://youtube.com/watch?v=..." value={lecYoutubeUrl} onChange={(e) => setLecYoutubeUrl(e.target.value)} />
                   <p className="text-[10px] text-muted-foreground">Paste full YouTube URL. It will be auto-embedded in privacy mode.</p>
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Video Thumbnail</Label>
+                  <input ref={lecFileInputRef} type="file" accept="image/*" className="hidden" onChange={handleLecThumbnailSelect} />
+                  {lecThumbnailPreview ? (
+                    <div className="relative">
+                      <img src={lecThumbnailPreview} alt="Preview" className="w-full h-24 object-cover rounded-lg border border-border" />
+                      <Button size="sm" variant="secondary" className="absolute top-1 right-1 h-6 text-[10px]" onClick={() => { setLecThumbnailFile(null); setLecThumbnailPreview(""); }}>Remove</Button>
+                    </div>
+                  ) : (
+                    <div className="w-full h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 transition-colors" onClick={() => lecFileInputRef.current?.click()}>
+                      <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">Upload thumbnail (optional)</span>
+                    </div>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1"><Label className="text-xs">Duration</Label><Input placeholder="10:00" value={lecDuration} onChange={(e) => setLecDuration(e.target.value)} /></div>
                   <div className="space-y-1 flex items-end gap-2 pb-0.5">
@@ -292,20 +342,31 @@ const AdminContent = () => {
                     <Label className="text-xs">Free Preview</Label>
                   </div>
                 </div>
-                <Button className="w-full" onClick={handleCreateLecture} disabled={createLecture.isPending}>
-                  {createLecture.isPending ? "Adding..." : "Add Lecture"}
+                <Button className="w-full" onClick={handleCreateLecture} disabled={createLecture.isPending || lecUploading}>
+                  {lecUploading ? "Uploading thumbnail..." : createLecture.isPending ? "Adding..." : "Add Lecture"}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
           {lectures.map((l) => (
             <Card key={l.id} className="p-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><Video className="w-4 h-4 text-primary" /></div>
+              {(l as any).thumbnail_url ? (
+                <img src={(l as any).thumbnail_url} alt={l.title} className="w-10 h-10 rounded-xl object-cover shrink-0" />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><Video className="w-4 h-4 text-primary" /></div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{l.title}</p>
                 <p className="text-xs text-muted-foreground">{(l as any).chapters?.title} · {l.duration}</p>
               </div>
-              {l.free_preview && <Badge className="bg-success/10 text-success border-0 text-[10px]"><Eye className="w-2.5 h-2.5 mr-0.5" /> Free</Badge>}
+              <div className="flex items-center gap-1 shrink-0" title="Toggle free preview">
+                <Switch
+                  checked={l.free_preview}
+                  onCheckedChange={() => handleToggleFreePreview(l.id, l.free_preview)}
+                  className="scale-75"
+                />
+                <span className="text-[10px] text-muted-foreground">{l.free_preview ? "Free" : "Locked"}</span>
+              </div>
               <Button size="sm" variant="ghost" className="text-destructive shrink-0" onClick={() => deleteLecture.mutate(l.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
             </Card>
           ))}

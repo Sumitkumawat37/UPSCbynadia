@@ -101,6 +101,17 @@ export function useCreateLecture() {
   });
 }
 
+export function useUpdateLecture() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; [key: string]: any }) => {
+      const { error } = await supabase.from("lectures").update(updates).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["lectures"] }),
+  });
+}
+
 export function useDeleteLecture() {
   const qc = useQueryClient();
   return useMutation({
