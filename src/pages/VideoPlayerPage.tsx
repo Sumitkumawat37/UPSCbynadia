@@ -7,7 +7,7 @@ import { useLecture, useCourses, useDoubts, useCreateDoubt, useLectureProgress, 
 import { usePurchase } from "@/lib/purchase-context";
 import { useAuth } from "@/lib/auth-context";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, CheckCircle, Send, MessageCircle, Lock, Eye, Play } from "lucide-react";
+import { ChevronLeft, CheckCircle, Send, MessageCircle, Lock, Eye, Play, Maximize, Minimize, X } from "lucide-react";
 import { toast } from "sonner";
 
 declare global {
