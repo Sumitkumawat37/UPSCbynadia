@@ -23,6 +23,7 @@ const VideoPlayerPage = () => {
   const upsertProgress = useUpsertLectureProgress();
   const [newDoubt, setNewDoubt] = useState("");
   const playerRef = useRef<any>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoCompletedRef = useRef(false);
 
