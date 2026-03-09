@@ -30,6 +30,7 @@ const VideoPlayerPage = () => {
   const upsertProgress = useUpsertLectureProgress();
   const [newDoubt, setNewDoubt] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [ytProgress, setYtProgress] = useState({ currentTime: 0, duration: 0 });
   const videoRef = useRef<HTMLVideoElement>(null);
   const autoCompletedRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
