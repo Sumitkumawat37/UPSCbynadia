@@ -68,6 +68,7 @@ const AdminContent = () => {
   const deleteChapter = useDeleteChapter();
   const createLecture = useCreateLecture();
   const deleteLecture = useDeleteLecture();
+  const updateLecture = useUpdateLecture();
   const createNote = useCreateNote();
   const deleteNote = useDeleteNote();
 
