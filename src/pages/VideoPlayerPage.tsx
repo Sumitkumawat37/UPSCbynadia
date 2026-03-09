@@ -161,16 +161,8 @@ const VideoPlayerPage = () => {
         className="relative rounded-2xl overflow-hidden bg-foreground/5 shadow-lg border border-border"
         onContextMenu={(e) => e.preventDefault()}
       >
-        <div className="w-full aspect-video">
-          <iframe
-            className="w-full h-full"
-            src={`https://www.youtube-nocookie.com/embed/${lecture.youtube_id}?modestbranding=1&rel=0&controls=1&showinfo=0&disablekb=0&iv_load_policy=3&fs=1`}
-            title={lecture.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            referrerPolicy="no-referrer"
-            sandbox="allow-scripts allow-same-origin allow-presentation"
-          />
+        <div className="w-full aspect-video bg-black">
+          <div id="yt-player" className="w-full h-full" />
         </div>
         <div className="absolute top-2 right-2 pointer-events-none">
           <Badge className="bg-primary/90 text-primary-foreground text-[10px] backdrop-blur-sm shadow-md">
