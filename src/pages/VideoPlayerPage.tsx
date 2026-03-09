@@ -30,6 +30,7 @@ const VideoPlayerPage = () => {
   const upsertProgress = useUpsertLectureProgress();
   const [newDoubt, setNewDoubt] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [ytProgress, setYtProgress] = useState({ currentTime: 0, duration: 0 });
   const videoRef = useRef<HTMLVideoElement>(null);
   const autoCompletedRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -102,7 +103,7 @@ const VideoPlayerPage = () => {
 
   // Track YouTube iframe progress via postMessage API
   useEffect(() => {
-    if (!hasYoutubeVideo || completed) return;
+    if (!hasYoutubeVideo) return;
     autoCompletedRef.current = completed;
 
     const handleMessage = (event: MessageEvent) => {
@@ -110,8 +111,12 @@ const VideoPlayerPage = () => {
       try {
         const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         if (data?.event === "infoDelivery" && data?.info?.currentTime != null && data?.info?.duration) {
-          const pct = (data.info.currentTime / data.info.duration) * 100;
-          if (pct >= 80 && !autoCompletedRef.current) {
+          const currentTime = data.info.currentTime;
+          const duration = data.info.duration;
+          setYtProgress({ currentTime, duration });
+          
+          const pct = (currentTime / duration) * 100;
+          if (pct >= 80 && !autoCompletedRef.current && !completed) {
             handleAutoComplete();
           }
         }
@@ -127,7 +132,7 @@ const VideoPlayerPage = () => {
         iframe.contentWindow.postMessage('{"event":"listening"}', "*");
         iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "addEventListener", args: ["onStateChange"] }), "*");
       }
-    }, 2000);
+    }, 1000);
     ytIntervalRef.current = kickstart;
 
     return () => {
@@ -135,6 +140,15 @@ const VideoPlayerPage = () => {
       if (ytIntervalRef.current) clearInterval(ytIntervalRef.current);
     };
   }, [hasYoutubeVideo, completed, handleAutoComplete]);
+
+  // Format time as mm:ss
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const ytProgressPercent = ytProgress.duration > 0 ? (ytProgress.currentTime / ytProgress.duration) * 100 : 0;
 
   if (!lecture || !course) return <div className="p-8 text-center text-muted-foreground">Lecture not found</div>;
 
@@ -249,13 +263,30 @@ const VideoPlayerPage = () => {
               {/* Top overlay */}
               <div className="absolute top-0 left-0 right-0 h-12 z-[5] pointer-events-auto" style={{ background: 'linear-gradient(to bottom, #000 60%, transparent)' }} />
               {/* Bottom overlay */}
-              <div className="absolute bottom-0 left-0 right-0 h-16 z-[5] pointer-events-none" style={{ background: 'linear-gradient(to top, #000 40%, transparent)' }} />
+              <div className="absolute bottom-0 left-0 right-0 h-20 z-[5] pointer-events-none" style={{ background: 'linear-gradient(to top, #000 50%, transparent)' }} />
               {/* Bottom-right - blocks Watch on YouTube */}
               <div className="absolute bottom-0 right-0 w-44 h-16 bg-black z-[6] pointer-events-auto" />
               {/* Top-right - blocks menu */}
               <div className="absolute top-0 right-0 w-16 h-12 bg-black z-[6] pointer-events-auto" />
               {/* Top-left - blocks logo */}
               <div className="absolute top-0 left-0 w-12 h-12 bg-black z-[6] pointer-events-auto" />
+              
+              {/* Custom Progress Bar */}
+              <div className="absolute bottom-0 left-0 right-0 z-[8] px-3 pb-2 pointer-events-none">
+                <div className="flex items-center gap-2">
+                  {/* Time display */}
+                  <span className="text-[10px] text-white/90 font-medium min-w-[70px]">
+                    {formatTime(ytProgress.currentTime)} / {formatTime(ytProgress.duration)}
+                  </span>
+                  {/* Progress bar */}
+                  <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${ytProgressPercent}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
