@@ -43,6 +43,10 @@ const AdminContent = () => {
   const [lecCourseId, setLecCourseId] = useState("");
   const [lecChapterId, setLecChapterId] = useState("");
   const [lecFreePreview, setLecFreePreview] = useState(false);
+  const [lecThumbnailFile, setLecThumbnailFile] = useState<File | null>(null);
+  const [lecThumbnailPreview, setLecThumbnailPreview] = useState("");
+  const [lecUploading, setLecUploading] = useState(false);
+  const lecFileInputRef = useRef<HTMLInputElement>(null);
 
   // Note form
   const [showNoteForm, setShowNoteForm] = useState(false);
