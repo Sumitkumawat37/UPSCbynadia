@@ -147,20 +147,47 @@ const AdminContent = () => {
     return urlData.publicUrl;
   };
 
+  const handleVideoFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("video/")) { toast.error("Please select a video file"); return; }
+    if (file.size > 500 * 1024 * 1024) { toast.error("Video must be under 500MB"); return; }
+    setLecVideoFile(file);
+    setLecYoutubeUrl(""); // Clear YouTube URL when uploading video
+  };
+
+  const uploadVideoFile = async (): Promise<string | undefined> => {
+    if (!lecVideoFile) return lecVideoUrl || undefined;
+    setLecVideoUploading(true);
+    const ext = lecVideoFile.name.split(".").pop();
+    const path = `videos/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("videos").upload(path, lecVideoFile);
+    setLecVideoUploading(false);
+    if (error) { toast.error("Video upload failed: " + error.message); return undefined; }
+    const { data: urlData } = supabase.storage.from("videos").getPublicUrl(path);
+    return urlData.publicUrl;
+  };
+
   const handleCreateLecture = async () => {
-    if (!lecTitle || !lecYoutubeUrl || !lecCourseId || !lecChapterId) return toast.error("Fill all fields");
+    if (!lecTitle || !lecCourseId || !lecChapterId) return toast.error("Fill required fields");
+    if (!lecYoutubeUrl && !lecVideoUrl && !lecVideoFile) return toast.error("Add a YouTube link or upload a video");
+    
     const thumbUrl = await uploadLecThumbnail();
+    const videoUrl = await uploadVideoFile();
     const sortOrder = lectures.filter((l) => l.chapter_id === lecChapterId).length;
+    
     createLecture.mutate({
       course_id: lecCourseId, chapter_id: lecChapterId, title: lecTitle,
-      youtube_id: lecYoutubeUrl, duration: lecDuration, free_preview: lecFreePreview, sort_order: sortOrder,
+      youtube_id: lecYoutubeUrl || "", duration: lecDuration, free_preview: lecFreePreview, sort_order: sortOrder,
       ...(thumbUrl ? { thumbnail_url: thumbUrl } : {}),
+      ...(videoUrl ? { video_url: videoUrl } : {}),
     } as any, {
       onSuccess: () => {
         toast.success("Lecture added!");
         setShowLectureForm(false);
-        setLecTitle(""); setLecYoutubeUrl(""); setLecFreePreview(false);
+        setLecTitle(""); setLecYoutubeUrl(""); setLecVideoUrl(""); setLecFreePreview(false);
         setLecThumbnailFile(null); setLecThumbnailPreview("");
+        setLecVideoFile(null);
       },
     });
   };
