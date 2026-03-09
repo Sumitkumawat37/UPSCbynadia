@@ -7,7 +7,7 @@ import { useLecture, useCourses, useDoubts, useCreateDoubt, useLectureProgress, 
 import { usePurchase } from "@/lib/purchase-context";
 import { useAuth } from "@/lib/auth-context";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, CheckCircle, Send, MessageCircle, Lock, Eye, Play } from "lucide-react";
+import { ChevronLeft, CheckCircle, Send, MessageCircle, Lock, Eye, Play, Maximize, Minimize, X } from "lucide-react";
 import { toast } from "sonner";
 
 declare global {
@@ -29,10 +29,12 @@ const VideoPlayerPage = () => {
   const createDoubt = useCreateDoubt();
   const upsertProgress = useUpsertLectureProgress();
   const [newDoubt, setNewDoubt] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const autoCompletedRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const ytIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const course = courses.find((c) => c.id === courseId);
   const myProgress = progressData.find((p) => p.lecture_id === lectureId);
@@ -207,12 +209,16 @@ const VideoPlayerPage = () => {
 
       {/* Native-style Video Player */}
       <div
-        className="relative rounded-2xl overflow-hidden bg-foreground/5 shadow-lg border border-border"
+        ref={videoContainerRef}
+        className={`relative overflow-hidden shadow-lg transition-all duration-300 ${
+          isFullscreen 
+            ? "fixed inset-0 z-50 rounded-none border-none bg-black flex items-center justify-center" 
+            : "rounded-2xl bg-foreground/5 border border-border"
+        }`}
         onContextMenu={(e) => e.preventDefault()}
       >
-        <div className="w-full aspect-video bg-black relative">
+        <div className={`bg-black relative ${isFullscreen ? "w-full h-full" : "w-full aspect-video"}`}>
           {hasUploadedVideo ? (
-            // Native HTML5 Video Player for uploaded videos
             <video
               ref={videoRef}
               src={videoUrl}
@@ -225,7 +231,6 @@ const VideoPlayerPage = () => {
               Your browser does not support the video tag.
             </video>
           ) : hasYoutubeVideo ? (
-            // Privacy-enhanced YouTube embed with full branding overlay
             <div className="relative w-full h-full overflow-hidden">
               <iframe
                 ref={iframeRef}
@@ -233,28 +238,26 @@ const VideoPlayerPage = () => {
                 title={lecture.title}
                 className="absolute w-full h-full"
                 style={{
-                  // Scale up the iframe and reposition to crop out YouTube UI chrome
                   top: '-60px',
                   left: 0,
                   width: '100%',
                   height: 'calc(100% + 120px)',
                 }}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
+                allowFullScreen={false}
               />
-              {/* Top overlay - hides video title, channel name, share button */}
+              {/* Top overlay */}
               <div className="absolute top-0 left-0 right-0 h-12 z-[5] pointer-events-auto" style={{ background: 'linear-gradient(to bottom, #000 60%, transparent)' }} />
-              {/* Bottom overlay - hides Watch on YouTube, suggested videos, progress bar area gets custom look */}
+              {/* Bottom overlay */}
               <div className="absolute bottom-0 left-0 right-0 h-16 z-[5] pointer-events-none" style={{ background: 'linear-gradient(to top, #000 40%, transparent)' }} />
-              {/* Bottom-right corner - specifically blocks "Watch on YouTube" button */}
+              {/* Bottom-right - blocks Watch on YouTube */}
               <div className="absolute bottom-0 right-0 w-44 h-16 bg-black z-[6] pointer-events-auto" />
-              {/* Top-right corner - blocks 3-dot menu / more options */}
+              {/* Top-right - blocks menu */}
               <div className="absolute top-0 right-0 w-16 h-12 bg-black z-[6] pointer-events-auto" />
-              {/* Top-left corner - blocks channel logo */}
+              {/* Top-left - blocks logo */}
               <div className="absolute top-0 left-0 w-12 h-12 bg-black z-[6] pointer-events-auto" />
             </div>
           ) : (
-            // No video placeholder
             <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
                 <Play className="w-8 h-8 text-primary" />
@@ -265,15 +268,37 @@ const VideoPlayerPage = () => {
           )}
         </div>
 
+        {/* Custom Fullscreen Toggle */}
+        {(hasUploadedVideo || hasYoutubeVideo) && (
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="absolute bottom-3 right-3 z-[10] bg-black/70 hover:bg-black/90 text-white rounded-lg p-2 transition-colors"
+          >
+            {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+          </button>
+        )}
+
+        {/* Close button in fullscreen */}
+        {isFullscreen && (
+          <button
+            onClick={() => setIsFullscreen(false)}
+            className="absolute top-4 right-4 z-[10] bg-black/70 hover:bg-black/90 text-white rounded-full p-2 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+
         {/* EduMaster Badge */}
-        <div className="absolute top-2 right-2 pointer-events-none z-10">
-          <Badge className="bg-primary/90 text-primary-foreground text-[10px] backdrop-blur-sm shadow-md">
-            EduMaster Lecture
-          </Badge>
-        </div>
+        {!isFullscreen && (
+          <div className="absolute top-2 right-2 pointer-events-none z-10">
+            <Badge className="bg-primary/90 text-primary-foreground text-[10px] backdrop-blur-sm shadow-md">
+              EduMaster Lecture
+            </Badge>
+          </div>
+        )}
 
         {/* Free Preview Badge */}
-        {lecture.free_preview && (
+        {lecture.free_preview && !isFullscreen && (
           <div className="absolute top-2 left-2 pointer-events-none z-10">
             <Badge className="bg-success text-success-foreground text-[10px]">
               <Eye className="w-3 h-3 mr-0.5" /> Free Preview
