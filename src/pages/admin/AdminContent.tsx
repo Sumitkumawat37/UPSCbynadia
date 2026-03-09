@@ -320,6 +320,21 @@ const AdminContent = () => {
                   <Input placeholder="https://youtube.com/watch?v=..." value={lecYoutubeUrl} onChange={(e) => setLecYoutubeUrl(e.target.value)} />
                   <p className="text-[10px] text-muted-foreground">Paste full YouTube URL. It will be auto-embedded in privacy mode.</p>
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Video Thumbnail</Label>
+                  <input ref={lecFileInputRef} type="file" accept="image/*" className="hidden" onChange={handleLecThumbnailSelect} />
+                  {lecThumbnailPreview ? (
+                    <div className="relative">
+                      <img src={lecThumbnailPreview} alt="Preview" className="w-full h-24 object-cover rounded-lg border border-border" />
+                      <Button size="sm" variant="secondary" className="absolute top-1 right-1 h-6 text-[10px]" onClick={() => { setLecThumbnailFile(null); setLecThumbnailPreview(""); }}>Remove</Button>
+                    </div>
+                  ) : (
+                    <div className="w-full h-24 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 transition-colors" onClick={() => lecFileInputRef.current?.click()}>
+                      <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">Upload thumbnail (optional)</span>
+                    </div>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1"><Label className="text-xs">Duration</Label><Input placeholder="10:00" value={lecDuration} onChange={(e) => setLecDuration(e.target.value)} /></div>
                   <div className="space-y-1 flex items-end gap-2 pb-0.5">
@@ -327,8 +342,8 @@ const AdminContent = () => {
                     <Label className="text-xs">Free Preview</Label>
                   </div>
                 </div>
-                <Button className="w-full" onClick={handleCreateLecture} disabled={createLecture.isPending}>
-                  {createLecture.isPending ? "Adding..." : "Add Lecture"}
+                <Button className="w-full" onClick={handleCreateLecture} disabled={createLecture.isPending || lecUploading}>
+                  {lecUploading ? "Uploading thumbnail..." : createLecture.isPending ? "Adding..." : "Add Lecture"}
                 </Button>
               </div>
             </DialogContent>
