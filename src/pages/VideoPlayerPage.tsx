@@ -22,7 +22,7 @@ const VideoPlayerPage = () => {
   const createDoubt = useCreateDoubt();
   const upsertProgress = useUpsertLectureProgress();
   const [newDoubt, setNewDoubt] = useState("");
-  const playerRef = useRef<YT.Player | null>(null);
+  const playerRef = useRef<any>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoCompletedRef = useRef(false);
 
