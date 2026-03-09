@@ -23,6 +23,7 @@ const VideoPlayerPage = () => {
   const upsertProgress = useUpsertLectureProgress();
   const [newDoubt, setNewDoubt] = useState("");
   const playerRef = useRef<any>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoCompletedRef = useRef(false);
 
@@ -31,13 +32,7 @@ const VideoPlayerPage = () => {
   const completed = myProgress?.completed ?? false;
   const canAccess = lecture ? (lecture.free_preview || hasPurchased(courseId || "")) : false;
 
-  // Load YouTube IFrame API
-  useEffect(() => {
-    if ((window as any).YT) return;
-    const tag = document.createElement("script");
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
-  }, []);
+  // Script loading is now handled in the player init effect
 
   const handleAutoComplete = useCallback(() => {
     if (!user || completed || autoCompletedRef.current) return;
@@ -59,19 +54,25 @@ const VideoPlayerPage = () => {
     if (!videoId || !isValidYoutubeId(videoId) || !canAccess) return;
     autoCompletedRef.current = completed;
 
-    const initPlayer = () => {
-      if (!document.getElementById("yt-player")) return;
+    const createPlayer = (container: HTMLDivElement) => {
+      // Destroy previous player if any
       if (playerRef.current) {
         try { playerRef.current.destroy(); } catch {}
         playerRef.current = null;
       }
+      // Clear container and re-add a fresh div for YT to attach to
+      container.innerHTML = "";
+      const div = document.createElement("div");
+      container.appendChild(div);
+
       try {
-        playerRef.current = new (window as any).YT.Player("yt-player", {
+        playerRef.current = new (window as any).YT.Player(div, {
           videoId,
+          width: "100%",
+          height: "100%",
           playerVars: {
             modestbranding: 1, rel: 0, controls: 1, showinfo: 0,
-            disablekb: 0, iv_load_policy: 3, fs: 1,
-            origin: window.location.origin,
+            iv_load_policy: 3, fs: 1, origin: window.location.origin,
           },
           events: {
             onStateChange: (event: any) => {
@@ -82,10 +83,8 @@ const VideoPlayerPage = () => {
                   const current = playerRef.current.getCurrentTime?.();
                   const duration = playerRef.current.getDuration?.();
                   if (current && duration && duration > 0) {
-                    const percent = (current / duration) * 100;
-                    if (percent >= 80 && !autoCompletedRef.current) {
-                      handleAutoComplete();
-                    }
+                    const pct = (current / duration) * 100;
+                    if (pct >= 80 && !autoCompletedRef.current) handleAutoComplete();
                   }
                 }, 3000);
               } else {
@@ -99,11 +98,27 @@ const VideoPlayerPage = () => {
       }
     };
 
-    if ((window as any).YT?.Player) {
-      initPlayer();
-    } else {
-      (window as any).onYouTubeIframeAPIReady = initPlayer;
+    const waitForYT = (container: HTMLDivElement) => {
+      if ((window as any).YT?.Player) {
+        createPlayer(container);
+      } else {
+        // Script not ready yet — poll until it is
+        const prev = (window as any).onYouTubeIframeAPIReady;
+        (window as any).onYouTubeIframeAPIReady = () => {
+          if (prev) prev();
+          if (playerContainerRef.current) createPlayer(playerContainerRef.current);
+        };
+      }
+    };
+
+    // Load script if not present
+    if (!(window as any).YT) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(tag);
     }
+
+    if (playerContainerRef.current) waitForYT(playerContainerRef.current);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -171,7 +186,7 @@ const VideoPlayerPage = () => {
       >
         <div className="w-full aspect-video bg-black">
           {/^[a-zA-Z0-9_-]{11}$/.test(lecture.youtube_id?.trim() ?? "") ? (
-            <div id="yt-player" className="w-full h-full" />
+            <div ref={playerContainerRef} key={lecture.youtube_id} className="w-full h-full" />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
               <span className="text-2xl">🎬</span>
