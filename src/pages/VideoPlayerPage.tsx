@@ -52,45 +52,51 @@ const VideoPlayerPage = () => {
   }, [user, completed, lectureId, upsertProgress]);
 
   // Initialize YT player and track progress
+  const isValidYoutubeId = (id: string) => /^[a-zA-Z0-9_-]{11}$/.test(id?.trim());
+
   useEffect(() => {
-    if (!lecture?.youtube_id || !lecture.youtube_id.trim() || !canAccess) return;
+    const videoId = lecture?.youtube_id?.trim();
+    if (!videoId || !isValidYoutubeId(videoId) || !canAccess) return;
     autoCompletedRef.current = completed;
 
     const initPlayer = () => {
-      const videoId = lecture.youtube_id?.trim();
-      if (!videoId || videoId.length < 5) return;
+      if (!document.getElementById("yt-player")) return;
       if (playerRef.current) {
         try { playerRef.current.destroy(); } catch {}
         playerRef.current = null;
       }
-      playerRef.current = new (window as any).YT.Player("yt-player", {
-        videoId,
-        playerVars: {
-          modestbranding: 1, rel: 0, controls: 1, showinfo: 0,
-          disablekb: 0, iv_load_policy: 3, fs: 1,
-          origin: window.location.origin,
-        },
-        events: {
-          onStateChange: (event: any) => {
-            if (event.data === 1) {
-              if (intervalRef.current) clearInterval(intervalRef.current);
-              intervalRef.current = setInterval(() => {
-                if (!playerRef.current) return;
-                const current = playerRef.current.getCurrentTime?.();
-                const duration = playerRef.current.getDuration?.();
-                if (current && duration && duration > 0) {
-                  const percent = (current / duration) * 100;
-                  if (percent >= 80 && !autoCompletedRef.current) {
-                    handleAutoComplete();
-                  }
-                }
-              }, 3000);
-            } else {
-              if (intervalRef.current) clearInterval(intervalRef.current);
-            }
+      try {
+        playerRef.current = new (window as any).YT.Player("yt-player", {
+          videoId,
+          playerVars: {
+            modestbranding: 1, rel: 0, controls: 1, showinfo: 0,
+            disablekb: 0, iv_load_policy: 3, fs: 1,
+            origin: window.location.origin,
           },
-        },
-      });
+          events: {
+            onStateChange: (event: any) => {
+              if (event.data === 1) {
+                if (intervalRef.current) clearInterval(intervalRef.current);
+                intervalRef.current = setInterval(() => {
+                  if (!playerRef.current) return;
+                  const current = playerRef.current.getCurrentTime?.();
+                  const duration = playerRef.current.getDuration?.();
+                  if (current && duration && duration > 0) {
+                    const percent = (current / duration) * 100;
+                    if (percent >= 80 && !autoCompletedRef.current) {
+                      handleAutoComplete();
+                    }
+                  }
+                }, 3000);
+              } else {
+                if (intervalRef.current) clearInterval(intervalRef.current);
+              }
+            },
+          },
+        });
+      } catch (e) {
+        console.warn("YT Player init failed:", e);
+      }
     };
 
     if ((window as any).YT?.Player) {
@@ -164,11 +170,12 @@ const VideoPlayerPage = () => {
         onContextMenu={(e) => e.preventDefault()}
       >
         <div className="w-full aspect-video bg-black">
-          {lecture.youtube_id?.trim() ? (
+          {/^[a-zA-Z0-9_-]{11}$/.test(lecture.youtube_id?.trim() ?? "") ? (
             <div id="yt-player" className="w-full h-full" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-              No video available for this lecture
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <span className="text-2xl">🎬</span>
+              <span className="text-sm">No video added yet for this lecture</span>
             </div>
           )}
         </div>
