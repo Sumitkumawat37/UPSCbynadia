@@ -170,11 +170,12 @@ const VideoPlayerPage = () => {
         onContextMenu={(e) => e.preventDefault()}
       >
         <div className="w-full aspect-video bg-black">
-          {lecture.youtube_id?.trim() ? (
+          {/^[a-zA-Z0-9_-]{11}$/.test(lecture.youtube_id?.trim() ?? "") ? (
             <div id="yt-player" className="w-full h-full" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-              No video available for this lecture
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <span className="text-2xl">🎬</span>
+              <span className="text-sm">No video added yet for this lecture</span>
             </div>
           )}
         </div>
