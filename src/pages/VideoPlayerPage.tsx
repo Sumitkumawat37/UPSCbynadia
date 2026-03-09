@@ -60,19 +60,25 @@ const VideoPlayerPage = () => {
     if (!videoId || !isValidYoutubeId(videoId) || !canAccess) return;
     autoCompletedRef.current = completed;
 
-    const initPlayer = () => {
-      if (!document.getElementById("yt-player")) return;
+    const createPlayer = (container: HTMLDivElement) => {
+      // Destroy previous player if any
       if (playerRef.current) {
         try { playerRef.current.destroy(); } catch {}
         playerRef.current = null;
       }
+      // Clear container and re-add a fresh div for YT to attach to
+      container.innerHTML = "";
+      const div = document.createElement("div");
+      container.appendChild(div);
+
       try {
-        playerRef.current = new (window as any).YT.Player("yt-player", {
+        playerRef.current = new (window as any).YT.Player(div, {
           videoId,
+          width: "100%",
+          height: "100%",
           playerVars: {
             modestbranding: 1, rel: 0, controls: 1, showinfo: 0,
-            disablekb: 0, iv_load_policy: 3, fs: 1,
-            origin: window.location.origin,
+            iv_load_policy: 3, fs: 1, origin: window.location.origin,
           },
           events: {
             onStateChange: (event: any) => {
@@ -83,10 +89,8 @@ const VideoPlayerPage = () => {
                   const current = playerRef.current.getCurrentTime?.();
                   const duration = playerRef.current.getDuration?.();
                   if (current && duration && duration > 0) {
-                    const percent = (current / duration) * 100;
-                    if (percent >= 80 && !autoCompletedRef.current) {
-                      handleAutoComplete();
-                    }
+                    const pct = (current / duration) * 100;
+                    if (pct >= 80 && !autoCompletedRef.current) handleAutoComplete();
                   }
                 }, 3000);
               } else {
@@ -100,11 +104,27 @@ const VideoPlayerPage = () => {
       }
     };
 
-    if ((window as any).YT?.Player) {
-      initPlayer();
-    } else {
-      (window as any).onYouTubeIframeAPIReady = initPlayer;
+    const waitForYT = (container: HTMLDivElement) => {
+      if ((window as any).YT?.Player) {
+        createPlayer(container);
+      } else {
+        // Script not ready yet — poll until it is
+        const prev = (window as any).onYouTubeIframeAPIReady;
+        (window as any).onYouTubeIframeAPIReady = () => {
+          if (prev) prev();
+          if (playerContainerRef.current) createPlayer(playerContainerRef.current);
+        };
+      }
+    };
+
+    // Load script if not present
+    if (!(window as any).YT) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(tag);
     }
+
+    if (playerContainerRef.current) waitForYT(playerContainerRef.current);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
