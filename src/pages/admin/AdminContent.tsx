@@ -350,12 +350,23 @@ const AdminContent = () => {
           </Dialog>
           {lectures.map((l) => (
             <Card key={l.id} className="p-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><Video className="w-4 h-4 text-primary" /></div>
+              {(l as any).thumbnail_url ? (
+                <img src={(l as any).thumbnail_url} alt={l.title} className="w-10 h-10 rounded-xl object-cover shrink-0" />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"><Video className="w-4 h-4 text-primary" /></div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{l.title}</p>
                 <p className="text-xs text-muted-foreground">{(l as any).chapters?.title} · {l.duration}</p>
               </div>
-              {l.free_preview && <Badge className="bg-success/10 text-success border-0 text-[10px]"><Eye className="w-2.5 h-2.5 mr-0.5" /> Free</Badge>}
+              <div className="flex items-center gap-1 shrink-0" title="Toggle free preview">
+                <Switch
+                  checked={l.free_preview}
+                  onCheckedChange={() => handleToggleFreePreview(l.id, l.free_preview)}
+                  className="scale-75"
+                />
+                <span className="text-[10px] text-muted-foreground">{l.free_preview ? "Free" : "Locked"}</span>
+              </div>
               <Button size="sm" variant="ghost" className="text-destructive shrink-0" onClick={() => deleteLecture.mutate(l.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
             </Card>
           ))}
