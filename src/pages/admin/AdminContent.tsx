@@ -122,18 +122,48 @@ const AdminContent = () => {
     });
   };
 
-  const handleCreateLecture = () => {
+  const handleLecThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setLecThumbnailFile(file);
+    setLecThumbnailPreview(URL.createObjectURL(file));
+  };
+
+  const uploadLecThumbnail = async (): Promise<string | undefined> => {
+    if (!lecThumbnailFile) return undefined;
+    setLecUploading(true);
+    const ext = lecThumbnailFile.name.split(".").pop();
+    const path = `lectures/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("thumbnails").upload(path, lecThumbnailFile);
+    setLecUploading(false);
+    if (error) { toast.error("Upload failed: " + error.message); return undefined; }
+    const { data: urlData } = supabase.storage.from("thumbnails").getPublicUrl(path);
+    return urlData.publicUrl;
+  };
+
+  const handleCreateLecture = async () => {
     if (!lecTitle || !lecYoutubeUrl || !lecCourseId || !lecChapterId) return toast.error("Fill all fields");
+    const thumbUrl = await uploadLecThumbnail();
     const sortOrder = lectures.filter((l) => l.chapter_id === lecChapterId).length;
     createLecture.mutate({
       course_id: lecCourseId, chapter_id: lecChapterId, title: lecTitle,
       youtube_id: lecYoutubeUrl, duration: lecDuration, free_preview: lecFreePreview, sort_order: sortOrder,
-    }, {
+      ...(thumbUrl ? { thumbnail_url: thumbUrl } : {}),
+    } as any, {
       onSuccess: () => {
         toast.success("Lecture added!");
         setShowLectureForm(false);
         setLecTitle(""); setLecYoutubeUrl(""); setLecFreePreview(false);
+        setLecThumbnailFile(null); setLecThumbnailPreview("");
       },
+    });
+  };
+
+  const handleToggleFreePreview = (lectureId: string, currentValue: boolean) => {
+    updateLecture.mutate({ id: lectureId, free_preview: !currentValue }, {
+      onSuccess: () => toast.success(!currentValue ? "Marked as free preview" : "Removed free preview"),
     });
   };
 
