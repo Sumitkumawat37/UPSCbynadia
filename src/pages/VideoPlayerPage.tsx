@@ -225,20 +225,34 @@ const VideoPlayerPage = () => {
               Your browser does not support the video tag.
             </video>
           ) : hasYoutubeVideo ? (
-            // Privacy-enhanced YouTube embed with overlay to hide YouTube branding
-            <>
+            // Privacy-enhanced YouTube embed with full branding overlay
+            <div className="relative w-full h-full overflow-hidden">
               <iframe
                 ref={iframeRef}
                 src={getYoutubeEmbedUrl()}
                 title={lecture.title}
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                className="absolute w-full h-full"
+                style={{
+                  // Scale up the iframe and reposition to crop out YouTube UI chrome
+                  top: '-60px',
+                  left: 0,
+                  width: '100%',
+                  height: 'calc(100% + 120px)',
+                }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
-              {/* Overlays to hide YouTube branding - "Watch on YouTube" button and logo */}
-              <div className="absolute bottom-0 right-0 w-40 h-14 bg-black pointer-events-auto z-[5]" />
-              <div className="absolute top-0 left-0 w-full h-10 pointer-events-auto z-[5]" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)' }} />
-            </>
+              {/* Top overlay - hides video title, channel name, share button */}
+              <div className="absolute top-0 left-0 right-0 h-12 z-[5] pointer-events-auto" style={{ background: 'linear-gradient(to bottom, #000 60%, transparent)' }} />
+              {/* Bottom overlay - hides Watch on YouTube, suggested videos, progress bar area gets custom look */}
+              <div className="absolute bottom-0 left-0 right-0 h-16 z-[5] pointer-events-none" style={{ background: 'linear-gradient(to top, #000 40%, transparent)' }} />
+              {/* Bottom-right corner - specifically blocks "Watch on YouTube" button */}
+              <div className="absolute bottom-0 right-0 w-44 h-16 bg-black z-[6] pointer-events-auto" />
+              {/* Top-right corner - blocks 3-dot menu / more options */}
+              <div className="absolute top-0 right-0 w-16 h-12 bg-black z-[6] pointer-events-auto" />
+              {/* Top-left corner - blocks channel logo */}
+              <div className="absolute top-0 left-0 w-12 h-12 bg-black z-[6] pointer-events-auto" />
+            </div>
           ) : (
             // No video placeholder
             <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
