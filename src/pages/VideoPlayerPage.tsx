@@ -29,6 +29,7 @@ const VideoPlayerPage = () => {
   const course = courses.find((c) => c.id === courseId);
   const myProgress = progressData.find((p) => p.lecture_id === lectureId);
   const completed = myProgress?.completed ?? false;
+  const canAccess = lecture ? (lecture.free_preview || hasPurchased(courseId || "")) : false;
 
   // Load YouTube IFrame API
   useEffect(() => {
@@ -70,7 +71,6 @@ const VideoPlayerPage = () => {
         events: {
           onStateChange: (event: any) => {
             if (event.data === 1) {
-              // Playing - start tracking
               if (intervalRef.current) clearInterval(intervalRef.current);
               intervalRef.current = setInterval(() => {
                 if (!playerRef.current) return;
@@ -105,8 +105,6 @@ const VideoPlayerPage = () => {
   }, [lecture?.youtube_id, canAccess, completed, handleAutoComplete]);
 
   if (!lecture || !course) return <div className="p-8 text-center text-muted-foreground">Lecture not found</div>;
-
-  const canAccess = lecture.free_preview || hasPurchased(courseId || "");
 
   if (!canAccess) {
     return (
