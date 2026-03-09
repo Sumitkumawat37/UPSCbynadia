@@ -57,12 +57,14 @@ const VideoPlayerPage = () => {
     autoCompletedRef.current = completed;
 
     const initPlayer = () => {
+      const videoId = lecture.youtube_id?.trim();
+      if (!videoId || videoId.length < 5) return;
       if (playerRef.current) {
-        playerRef.current.destroy();
+        try { playerRef.current.destroy(); } catch {}
         playerRef.current = null;
       }
       playerRef.current = new (window as any).YT.Player("yt-player", {
-        videoId: lecture.youtube_id,
+        videoId,
         playerVars: {
           modestbranding: 1, rel: 0, controls: 1, showinfo: 0,
           disablekb: 0, iv_load_policy: 3, fs: 1,
