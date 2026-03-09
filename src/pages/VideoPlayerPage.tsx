@@ -164,7 +164,13 @@ const VideoPlayerPage = () => {
         onContextMenu={(e) => e.preventDefault()}
       >
         <div className="w-full aspect-video bg-black">
-          <div id="yt-player" className="w-full h-full" />
+          {lecture.youtube_id?.trim() ? (
+            <div id="yt-player" className="w-full h-full" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+              No video available for this lecture
+            </div>
+          )}
         </div>
         <div className="absolute top-2 right-2 pointer-events-none">
           <Badge className="bg-primary/90 text-primary-foreground text-[10px] backdrop-blur-sm shadow-md">
