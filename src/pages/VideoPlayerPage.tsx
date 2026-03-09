@@ -98,6 +98,42 @@ const VideoPlayerPage = () => {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [hasUploadedVideo, completed, handleAutoComplete]);
 
+  // Track YouTube iframe progress via postMessage API
+  useEffect(() => {
+    if (!hasYoutubeVideo || completed) return;
+    autoCompletedRef.current = completed;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (!event.origin.includes("youtube")) return;
+      try {
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        if (data?.event === "infoDelivery" && data?.info?.currentTime != null && data?.info?.duration) {
+          const pct = (data.info.currentTime / data.info.duration) * 100;
+          if (pct >= 80 && !autoCompletedRef.current) {
+            handleAutoComplete();
+          }
+        }
+      } catch { /* ignore non-JSON messages */ }
+    };
+
+    window.addEventListener("message", handleMessage);
+
+    // Kick off listening by sending "listening" command to iframe
+    const kickstart = setInterval(() => {
+      const iframe = iframeRef.current;
+      if (iframe?.contentWindow) {
+        iframe.contentWindow.postMessage('{"event":"listening"}', "*");
+        iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "addEventListener", args: ["onStateChange"] }), "*");
+      }
+    }, 2000);
+    ytIntervalRef.current = kickstart;
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+      if (ytIntervalRef.current) clearInterval(ytIntervalRef.current);
+    };
+  }, [hasYoutubeVideo, completed, handleAutoComplete]);
+
   if (!lecture || !course) return <div className="p-8 text-center text-muted-foreground">Lecture not found</div>;
 
   if (!canAccess) {
