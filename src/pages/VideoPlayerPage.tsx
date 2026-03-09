@@ -103,7 +103,7 @@ const VideoPlayerPage = () => {
 
   // Track YouTube iframe progress via postMessage API
   useEffect(() => {
-    if (!hasYoutubeVideo || completed) return;
+    if (!hasYoutubeVideo) return;
     autoCompletedRef.current = completed;
 
     const handleMessage = (event: MessageEvent) => {
@@ -111,8 +111,12 @@ const VideoPlayerPage = () => {
       try {
         const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         if (data?.event === "infoDelivery" && data?.info?.currentTime != null && data?.info?.duration) {
-          const pct = (data.info.currentTime / data.info.duration) * 100;
-          if (pct >= 80 && !autoCompletedRef.current) {
+          const currentTime = data.info.currentTime;
+          const duration = data.info.duration;
+          setYtProgress({ currentTime, duration });
+          
+          const pct = (currentTime / duration) * 100;
+          if (pct >= 80 && !autoCompletedRef.current && !completed) {
             handleAutoComplete();
           }
         }
@@ -128,7 +132,7 @@ const VideoPlayerPage = () => {
         iframe.contentWindow.postMessage('{"event":"listening"}', "*");
         iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "addEventListener", args: ["onStateChange"] }), "*");
       }
-    }, 2000);
+    }, 1000);
     ytIntervalRef.current = kickstart;
 
     return () => {
@@ -136,6 +140,15 @@ const VideoPlayerPage = () => {
       if (ytIntervalRef.current) clearInterval(ytIntervalRef.current);
     };
   }, [hasYoutubeVideo, completed, handleAutoComplete]);
+
+  // Format time as mm:ss
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const ytProgressPercent = ytProgress.duration > 0 ? (ytProgress.currentTime / ytProgress.duration) * 100 : 0;
 
   if (!lecture || !course) return <div className="p-8 text-center text-muted-foreground">Lecture not found</div>;
 
