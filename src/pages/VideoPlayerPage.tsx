@@ -30,11 +30,31 @@ const VideoPlayerPage = () => {
   const completed = myProgress?.completed ?? false;
   const canAccess = lecture ? (lecture.free_preview || hasPurchased(courseId || "")) : false;
 
-  // Check if it's a YouTube video or uploaded video
-  const isValidYoutubeId = (id: string) => /^[a-zA-Z0-9_-]{11}$/.test(id?.trim());
-  const youtubeId = lecture?.youtube_id?.trim();
-  const videoUrl = (lecture as any)?.video_url;
-  const hasYoutubeVideo = youtubeId && isValidYoutubeId(youtubeId);
+  // Extract YouTube video ID from various URL formats or direct ID
+  const extractYoutubeId = (input: string | undefined): string | null => {
+    if (!input) return null;
+    const trimmed = input.trim();
+    
+    // Already a valid 11-char ID
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+    
+    // Full YouTube URL patterns
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = trimmed.match(pattern);
+      if (match) return match[1];
+    }
+    
+    return null;
+  };
+
+  const youtubeId = extractYoutubeId(lecture?.youtube_id);
+  const videoUrl = lecture?.video_url;
+  const hasYoutubeVideo = !!youtubeId;
   const hasUploadedVideo = videoUrl && videoUrl.trim().length > 0;
 
   // Auto-complete when 80% watched
@@ -158,19 +178,13 @@ const VideoPlayerPage = () => {
             </video>
           ) : hasYoutubeVideo ? (
             // Privacy-enhanced YouTube embed
-            <div className="relative w-full h-full">
-              <iframe
-                src={getYoutubeEmbedUrl()}
-                title={lecture.title}
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                frameBorder="0"
-                sandbox="allow-same-origin allow-scripts allow-presentation allow-popups"
-              />
-              {/* Overlay to block YouTube logo clicks */}
-              <div className="absolute bottom-0 right-0 w-24 h-10 bg-transparent" />
-            </div>
+            <iframe
+              src={getYoutubeEmbedUrl()}
+              title={lecture.title}
+              className="absolute inset-0 w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
           ) : (
             // No video placeholder
             <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
