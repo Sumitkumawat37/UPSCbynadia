@@ -92,6 +92,11 @@ const AdminLiveClasses = () => {
               <Button size="sm" variant="ghost" className="text-destructive shrink-0" onClick={() => deleteLiveClass.mutate(cls.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
             </div>
             <div className="flex gap-2 mt-3">
+              {cls.status !== "completed" && (
+                <Button size="sm" className="flex-1" onClick={() => setActiveClass(cls)}>
+                  <ExternalLink className="w-3 h-3 mr-1" /> Join
+                </Button>
+              )}
               <Dialog>
                 <DialogTrigger asChild>
                   <Button size="sm" variant="secondary" className="flex-1" onClick={() => setViewAttendanceId(cls.id)}>
