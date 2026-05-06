@@ -9,6 +9,12 @@ import { useState } from "react";
 const LiveClassesPage = () => {
   const { data: liveClasses = [] } = useLiveClasses();
   const { data: courses = [] } = useCourses();
+  const [activeClass, setActiveClass] = useState<any | null>(null);
+
+  const buildLink = (raw: string) => {
+    if (!raw) return "";
+    return raw.startsWith("http") ? raw : `https://${raw}`;
+  };
 
   const upcoming = liveClasses.filter((c) => c.status === "upcoming");
   const completed = liveClasses.filter((c) => c.status === "completed");
