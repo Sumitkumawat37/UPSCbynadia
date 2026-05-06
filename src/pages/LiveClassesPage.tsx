@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useLiveClasses, useCourses } from "@/lib/supabase-data";
 import { Video, Calendar, Clock, ExternalLink, CheckCircle, X } from "lucide-react";
 import { useState } from "react";
+import { LiveMeetingFrame } from "@/components/LiveMeetingFrame";
 
 const LiveClassesPage = () => {
   const { data: liveClasses = [] } = useLiveClasses();
