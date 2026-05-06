@@ -1,12 +1,20 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLiveClasses, useCourses } from "@/lib/supabase-data";
-import { Video, Calendar, Clock, ExternalLink, CheckCircle } from "lucide-react";
+import { Video, Calendar, Clock, ExternalLink, CheckCircle, X } from "lucide-react";
+import { useState } from "react";
 
 const LiveClassesPage = () => {
   const { data: liveClasses = [] } = useLiveClasses();
   const { data: courses = [] } = useCourses();
+  const [activeClass, setActiveClass] = useState<any | null>(null);
+
+  const buildLink = (raw: string) => {
+    if (!raw) return "";
+    return raw.startsWith("http") ? raw : `https://${raw}`;
+  };
 
   const upcoming = liveClasses.filter((c) => c.status === "upcoming");
   const completed = liveClasses.filter((c) => c.status === "completed");
@@ -44,10 +52,7 @@ const LiveClassesPage = () => {
                       <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatDate(cls.scheduled_at)}</span>
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatTime(cls.scheduled_at)}</span>
                     </div>
-                    <Button size="sm" className="mt-3 w-full" onClick={() => {
-                      const link = cls.meeting_link?.startsWith("http") ? cls.meeting_link : `https://${cls.meeting_link}`;
-                      window.open(link, "_blank", "noopener,noreferrer");
-                    }}>
+                    <Button size="sm" className="mt-3 w-full" onClick={() => setActiveClass(cls)}>
                       <ExternalLink className="w-3 h-3 mr-1" /> Join Live Class
                     </Button>
                   </div>
@@ -78,6 +83,33 @@ const LiveClassesPage = () => {
           </div>
         </div>
       )}
+
+      <Dialog open={!!activeClass} onOpenChange={(o) => !o && setActiveClass(null)}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 overflow-hidden">
+          <DialogHeader className="px-4 py-3 border-b flex flex-row items-center justify-between space-y-0">
+            <DialogTitle className="text-sm truncate">{activeClass?.title}</DialogTitle>
+            <Button size="sm" variant="ghost" onClick={() => setActiveClass(null)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </DialogHeader>
+          {activeClass && (
+            <div className="flex-1 w-full h-full bg-black">
+              <iframe
+                src={buildLink(activeClass.meeting_link)}
+                className="w-full h-full border-0"
+                allow="camera; microphone; fullscreen; display-capture; autoplay"
+                title={activeClass.title}
+              />
+            </div>
+          )}
+          <div className="px-4 py-2 border-t text-[11px] text-muted-foreground flex items-center justify-between gap-2">
+            <span className="truncate">If the meeting doesn't load, your provider may block embedding.</span>
+            <Button size="sm" variant="secondary" onClick={() => activeClass && window.open(buildLink(activeClass.meeting_link), "_blank", "noopener,noreferrer")}>
+              Open externally
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
