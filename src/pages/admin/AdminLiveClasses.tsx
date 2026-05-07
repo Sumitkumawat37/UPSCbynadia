@@ -4,13 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useLiveClasses, useCourses, useChapters, useAttendance } from "@/lib/supabase-data";
 import { useCreateLiveClass, useDeleteLiveClass } from "@/lib/supabase-mutations";
-import { Video, Calendar, Clock, Eye, Trash2, ExternalLink, X } from "lucide-react";
+import { Video, Calendar, Clock, Eye, Trash2, ExternalLink, X, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { LiveMeetingFrame } from "@/components/LiveMeetingFrame";
+import { LiveDiagnostic } from "@/components/LiveDiagnostic";
 
 const AdminLiveClasses = () => {
   const [title, setTitle] = useState("");
@@ -21,6 +22,7 @@ const AdminLiveClasses = () => {
   const [duration, setDuration] = useState("60 min");
   const [viewAttendanceId, setViewAttendanceId] = useState<string | null>(null);
   const [activeClass, setActiveClass] = useState<any | null>(null);
+  const [diagUrl, setDiagUrl] = useState<string | null>(null);
   const buildLink = (raw: string) => !raw ? "" : raw.startsWith("http") ? raw : `https://${raw}`;
 
   const { data: liveClasses = [] } = useLiveClasses();
@@ -70,7 +72,10 @@ const AdminLiveClasses = () => {
             <Input placeholder="60 min" value={duration} onChange={(e) => setDuration(e.target.value)} />
           </div>
         </div>
-        <Input placeholder="Meeting link (Zoom/Google Meet)" value={meetingLink} onChange={(e) => setMeetingLink(e.target.value)} />
+        <Input placeholder="Meeting link (Jitsi, Google Meet, Zoom, YouTube Live…)" value={meetingLink} onChange={(e) => setMeetingLink(e.target.value)} />
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Tip: Jitsi & YouTube Live play in-app. Google Meet / Zoom open in a new tab automatically.
+        </p>
         <Button className="w-full" onClick={handleSchedule} disabled={createLiveClass.isPending}>
           <Calendar className="w-4 h-4 mr-2" /> {createLiveClass.isPending ? "Scheduling..." : "Schedule Live Class"}
         </Button>
@@ -92,12 +97,15 @@ const AdminLiveClasses = () => {
               </div>
               <Button size="sm" variant="ghost" className="text-destructive shrink-0" onClick={() => deleteLiveClass.mutate(cls.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
             </div>
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 flex-wrap">
               {cls.status !== "completed" && (
                 <Button size="sm" className="flex-1" onClick={() => setActiveClass(cls)}>
                   <ExternalLink className="w-3 h-3 mr-1" /> Join
                 </Button>
               )}
+              <Button size="sm" variant="outline" onClick={() => setDiagUrl(buildLink(cls.meeting_link))}>
+                <ShieldCheck className="w-3 h-3 mr-1" /> Test
+              </Button>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button size="sm" variant="secondary" className="flex-1" onClick={() => setViewAttendanceId(cls.id)}>
@@ -138,6 +146,7 @@ const AdminLiveClasses = () => {
           )}
         </DialogContent>
       </Dialog>
+      <LiveDiagnostic open={!!diagUrl} url={diagUrl || ""} onClose={() => setDiagUrl(null)} />
     </div>
   );
 };

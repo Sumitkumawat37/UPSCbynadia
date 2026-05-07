@@ -18,15 +18,19 @@ const SignupPage = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) return toast.error("Please fill all fields");
+    if (!name.trim() || !email.trim() || !password) return toast.error("Please fill all fields");
     if (password.length < 6) return toast.error("Password must be at least 6 characters");
     setLoading(true);
-    const success = await signup(email, password, name);
-    setLoading(false);
-    if (success) {
-      toast.success("Account created successfully!");
-    } else {
-      toast.error("Signup failed. Email may already be in use.");
+    try {
+      await signup(email.trim(), password, name.trim());
+      toast.success("Account created! Check your email to verify, then sign in.");
+      navigate("/login");
+    } catch (err: any) {
+      const msg = err?.message || "";
+      if (msg.toLowerCase().includes("already")) toast.error("This email is already registered. Try signing in.");
+      else toast.error(msg || "Signup failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 

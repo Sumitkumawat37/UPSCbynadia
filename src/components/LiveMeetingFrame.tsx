@@ -22,8 +22,33 @@ function detectBlocked(url: string): string | null {
   }
 }
 
+// Detect YouTube live/video URLs and return an embeddable URL
+function toYoutubeEmbed(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase().replace(/^www\./, "");
+    if (host === "youtu.be") {
+      const id = u.pathname.slice(1);
+      if (id) return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`;
+    }
+    if (host.endsWith("youtube.com") || host === "youtube-nocookie.com") {
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube-nocookie.com/embed/${v}?autoplay=1`;
+      const m = u.pathname.match(/\/(?:live|embed|shorts)\/([a-zA-Z0-9_-]{11})/);
+      if (m) return `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1`;
+      const channelLive = u.pathname.match(/\/channel\/([^/]+)\/live/);
+      if (channelLive) return `https://www.youtube-nocookie.com/embed/live_stream?channel=${channelLive[1]}&autoplay=1`;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function LiveMeetingFrame({ url, title }: LiveMeetingFrameProps) {
-  const blockedHost = useMemo(() => detectBlocked(url), [url]);
+  const youtubeEmbed = useMemo(() => toYoutubeEmbed(url), [url]);
+  const effectiveUrl = youtubeEmbed || url;
+  const blockedHost = useMemo(() => (youtubeEmbed ? null : detectBlocked(url)), [url, youtubeEmbed]);
   const [loading, setLoading] = useState(!blockedHost);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -105,9 +130,9 @@ export function LiveMeetingFrame({ url, title }: LiveMeetingFrameProps) {
       {!error && (
         <iframe
           key={attempt}
-          src={url}
+          src={effectiveUrl}
           className="w-full h-full border-0"
-          allow="camera; microphone; fullscreen; display-capture; autoplay"
+          allow={youtubeEmbed ? "autoplay; encrypted-media; fullscreen; picture-in-picture" : "camera; microphone; fullscreen; display-capture; autoplay"}
           title={title}
           onLoad={handleLoad}
         />
