@@ -13,7 +13,15 @@ const NotificationsPage = () => {
 
   return (
     <div className="space-y-4 animate-slide-up">
-      <h2 className="text-xl font-bold">Notifications</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Notifications</h2>
+        <span className="text-xs text-muted-foreground">{announcements.length} total</span>
+      </div>
+      {announcements.length === 0 && (
+        <Card className="p-8 text-center">
+          <p className="text-sm text-muted-foreground">You're all caught up — no notifications yet.</p>
+        </Card>
+      )}
       <div className="space-y-2">
         {announcements.map((a, i) => {
           const Icon = iconMap[a.type] || Info;
@@ -30,7 +38,7 @@ const NotificationsPage = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <h4 className="font-semibold text-sm">{a.title}</h4>
-                    <span className="text-[10px] text-muted-foreground shrink-0">{new Date(a.created_at).toLocaleDateString()}</span>
+                    <span className="text-[10px] text-muted-foreground shrink-0">{new Date(a.created_at).toLocaleString()}</span>
                   </div>
                   <p className="text-muted-foreground text-xs mt-1">{a.message}</p>
                 </div>
