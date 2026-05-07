@@ -4,13 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useLiveClasses, useCourses, useChapters, useAttendance } from "@/lib/supabase-data";
 import { useCreateLiveClass, useDeleteLiveClass } from "@/lib/supabase-mutations";
-import { Video, Calendar, Clock, Eye, Trash2, ExternalLink, X } from "lucide-react";
+import { Video, Calendar, Clock, Eye, Trash2, ExternalLink, X, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { LiveMeetingFrame } from "@/components/LiveMeetingFrame";
+import { LiveDiagnostic } from "@/components/LiveDiagnostic";
 
 const AdminLiveClasses = () => {
   const [title, setTitle] = useState("");
