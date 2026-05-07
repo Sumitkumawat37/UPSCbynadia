@@ -22,6 +22,7 @@ const AdminLiveClasses = () => {
   const [duration, setDuration] = useState("60 min");
   const [viewAttendanceId, setViewAttendanceId] = useState<string | null>(null);
   const [activeClass, setActiveClass] = useState<any | null>(null);
+  const [diagUrl, setDiagUrl] = useState<string | null>(null);
   const buildLink = (raw: string) => !raw ? "" : raw.startsWith("http") ? raw : `https://${raw}`;
 
   const { data: liveClasses = [] } = useLiveClasses();
