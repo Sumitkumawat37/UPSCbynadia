@@ -46,7 +46,9 @@ function toYoutubeEmbed(url: string): string | null {
 }
 
 export function LiveMeetingFrame({ url, title }: LiveMeetingFrameProps) {
-  const blockedHost = useMemo(() => detectBlocked(url), [url]);
+  const youtubeEmbed = useMemo(() => toYoutubeEmbed(url), [url]);
+  const effectiveUrl = youtubeEmbed || url;
+  const blockedHost = useMemo(() => (youtubeEmbed ? null : detectBlocked(url)), [url, youtubeEmbed]);
   const [loading, setLoading] = useState(!blockedHost);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
