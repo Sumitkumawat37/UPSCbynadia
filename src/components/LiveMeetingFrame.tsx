@@ -127,16 +127,41 @@ export function LiveMeetingFrame({ url, title }: LiveMeetingFrameProps) {
   }
 
   return (
-    <div className="relative w-full h-full bg-black">
+    <div className="relative w-full h-full bg-black overflow-hidden">
       {!error && (
-        <iframe
-          key={attempt}
-          src={effectiveUrl}
-          className="w-full h-full border-0"
-          allow={youtubeEmbed ? "autoplay; encrypted-media; fullscreen; picture-in-picture" : "camera; microphone; fullscreen; display-capture; autoplay"}
-          title={title}
-          onLoad={handleLoad}
-        />
+        <>
+          {youtubeEmbed ? (
+            <div className="relative w-full h-full overflow-hidden">
+              <iframe
+                key={attempt}
+                src={effectiveUrl}
+                title={title}
+                className="absolute border-0"
+                style={{ top: '-60px', left: 0, width: '100%', height: 'calc(100% + 120px)' }}
+                allow="autoplay; encrypted-media; picture-in-picture"
+                onLoad={handleLoad}
+              />
+              {/* Lock overlays — hide YouTube branding/controls so it looks in-app */}
+              <div className="absolute top-0 left-0 right-0 h-12 z-[5] pointer-events-auto" style={{ background: 'linear-gradient(to bottom, #000 60%, transparent)' }} />
+              <div className="absolute bottom-0 left-0 right-0 h-16 z-[5] pointer-events-none" style={{ background: 'linear-gradient(to top, #000 50%, transparent)' }} />
+              <div className="absolute bottom-0 right-0 w-44 h-14 bg-black z-[6] pointer-events-auto" />
+              <div className="absolute top-0 right-0 w-16 h-12 bg-black z-[6] pointer-events-auto" />
+              <div className="absolute top-0 left-0 w-12 h-12 bg-black z-[6] pointer-events-auto" />
+              <div className="absolute top-2 left-2 z-[7] px-2 py-0.5 rounded bg-primary/90 text-primary-foreground text-[10px] font-semibold pointer-events-none">
+                EduMaster Live
+              </div>
+            </div>
+          ) : (
+            <iframe
+              key={attempt}
+              src={effectiveUrl}
+              className="w-full h-full border-0"
+              allow="camera; microphone; fullscreen; display-capture; autoplay"
+              title={title}
+              onLoad={handleLoad}
+            />
+          )}
+        </>
       )}
 
       {loading && !error && (
