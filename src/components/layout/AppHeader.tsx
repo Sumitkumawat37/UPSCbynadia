@@ -74,6 +74,32 @@ export function AppHeader() {
     };
   }, [role, qc, navigate]);
 
+  // Realtime: notify student when their doubt receives a teacher reply
+  useEffect(() => {
+    if (role === "admin" || !user?.id) return;
+    const channel = supabase
+      .channel(`doubt-replies-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "doubts", filter: `user_id=eq.${user.id}` },
+        (payload: any) => {
+          const before = payload.old?.reply;
+          const after = payload.new?.reply;
+          if (after && after !== before) {
+            qc.invalidateQueries({ queryKey: ["doubts"] });
+            toast.success("Teacher replied to your doubt", {
+              description: after,
+              action: { label: "View", onClick: () => navigate("/doubts") },
+            });
+          }
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [role, user?.id, qc, navigate]);
+
   // Reset unread count when on the notifications page
   useEffect(() => {
     const onRouteChange = () => {
