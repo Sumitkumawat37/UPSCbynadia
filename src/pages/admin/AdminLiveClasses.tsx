@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { LiveMeetingFrame } from "@/components/LiveMeetingFrame";
+import { LiveChat } from "@/components/LiveChat";
 import { LiveDiagnostic } from "@/components/LiveDiagnostic";
 
 const AdminLiveClasses = () => {
@@ -136,13 +137,20 @@ const AdminLiveClasses = () => {
       </div>
 
       <Dialog open={!!activeClass} onOpenChange={(o) => !o && setActiveClass(null)}>
-        <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 overflow-hidden">
-          <DialogHeader className="px-4 py-3 border-b flex flex-row items-center justify-between space-y-0">
+        <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col">
+          <DialogHeader className="px-4 py-3 border-b flex flex-row items-center justify-between space-y-0 shrink-0">
             <DialogTitle className="text-sm truncate">{activeClass?.title}</DialogTitle>
             <Button size="sm" variant="ghost" onClick={() => setActiveClass(null)}><X className="w-4 h-4" /></Button>
           </DialogHeader>
           {activeClass && (
-            <LiveMeetingFrame url={buildLink(activeClass.meeting_link)} title={activeClass.title} />
+            <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[1fr_340px]">
+              <div className="min-h-[40vh] md:min-h-0">
+                <LiveMeetingFrame url={buildLink(activeClass.meeting_link)} title={activeClass.title} />
+              </div>
+              <div className="border-t md:border-t-0 md:border-l min-h-0 h-[40vh] md:h-auto">
+                <LiveChat liveClassId={activeClass.id} isTeacher={true} />
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
