@@ -11,7 +11,7 @@ import { toast } from "sonner";
 const LAST_SEEN_KEY = "edumaster.notifications.lastSeen";
 
 export function AppHeader() {
-  const { role, logout } = useAuth();
+  const { role, logout, user } = useAuth();
   const navigate = useNavigate();
   const { data: announcements = [] } = useAnnouncements();
   const qc = useQueryClient();
