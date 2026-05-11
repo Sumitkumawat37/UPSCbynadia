@@ -9,10 +9,12 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LiveMeetingFrame } from "@/components/LiveMeetingFrame";
 import { LiveChat } from "@/components/LiveChat";
 import { LiveDiagnostic } from "@/components/LiveDiagnostic";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AdminLiveClasses = () => {
   const [title, setTitle] = useState("");
