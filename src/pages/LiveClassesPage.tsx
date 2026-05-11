@@ -7,11 +7,22 @@ import { Video, Calendar, Clock, ExternalLink, CheckCircle, X } from "lucide-rea
 import { useState } from "react";
 import { LiveMeetingFrame } from "@/components/LiveMeetingFrame";
 import { LiveChat } from "@/components/LiveChat";
+import { useMarkAttendance } from "@/lib/supabase-mutations";
+import { useAuth } from "@/lib/auth-context";
 
 const LiveClassesPage = () => {
   const { data: liveClasses = [] } = useLiveClasses();
   const { data: courses = [] } = useCourses();
   const [activeClass, setActiveClass] = useState<any | null>(null);
+  const markAttendance = useMarkAttendance();
+  const { user } = useAuth();
+
+  const handleJoin = (cls: any) => {
+    setActiveClass(cls);
+    if (user) {
+      markAttendance.mutate({ live_class_id: cls.id, student_name: user.name || user.email });
+    }
+  };
 
   const buildLink = (raw: string) => {
     if (!raw) return "";
