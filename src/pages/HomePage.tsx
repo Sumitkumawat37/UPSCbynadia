@@ -28,10 +28,10 @@ const HomePage = () => {
           <img 
             src={teacherBanner} 
             alt="Teacher Banner" 
-            className="absolute right-0 top-0 h-full w-auto object-cover opacity-90" 
+            className="absolute right-4 top-0 h-full w-auto object-cover opacity-90 scale-110" 
             style={{
-              maskImage: 'linear-gradient(to left, rgba(0,0,0,1) 35%, rgba(0,0,0,0.7) 65%, rgba(0,0,0,0) 100%)',
-              WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,1) 35%, rgba(0,0,0,0.7) 65%, rgba(0,0,0,0) 100%)'
+              maskImage: 'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0.6) 75%, rgba(0,0,0,0) 100%)',
+              WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0.6) 75%, rgba(0,0,0,0) 100%)'
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-800/80 to-transparent" />
