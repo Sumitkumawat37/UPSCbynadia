@@ -24,8 +24,12 @@ const HomePage = () => {
     <div className="space-y-5 animate-slide-up">
       {/* Teacher Banner */}
       <Card className="overflow-hidden relative">
-        <div className="relative">
-          <img src={teacherBanner} alt="Teacher Banner" className="w-full h-40 object-cover" />
+        <div className="relative h-40">
+          <img 
+            src={teacherBanner} 
+            alt="Teacher Banner" 
+            className="absolute inset-0 w-full h-full object-cover object-[30%_center]" 
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/40 to-transparent" />
           <div className="absolute inset-0 p-4 flex flex-col justify-center">
             <p className="text-primary-foreground/80 text-[10px] font-semibold uppercase tracking-widest">Your Mentor</p>
