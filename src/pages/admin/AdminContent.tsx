@@ -8,7 +8,7 @@ import { useCourses, useLectures, useNotes, useChapters } from "@/lib/supabase-d
 import { useCreateCourse, useDeleteCourse, useCreateChapter, useDeleteChapter, useCreateLecture, useDeleteLecture, useUpdateLecture, useCreateNote, useDeleteNote } from "@/lib/supabase-mutations";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Video, FileText, Plus, Upload, BookOpen, Eye, Trash2, FolderPlus, ImagePlus } from "lucide-react";
+import { Video, FileText, Plus, Upload, BookOpen, Eye, Trash2, FolderPlus, ImagePlus, ListVideo, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -52,6 +52,17 @@ const AdminContent = () => {
   const [lecUploading, setLecUploading] = useState(false);
   const lecFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Playlist import state
+  const [showPlaylistForm, setShowPlaylistForm] = useState(false);
+  const [plCourseId, setPlCourseId] = useState("");
+  const [plChapterId, setPlChapterId] = useState("");
+  const [plUrl, setPlUrl] = useState("");
+  const [plFirstTwoFree, setPlFirstTwoFree] = useState(true);
+  const [plImporting, setPlImporting] = useState(false);
+  const [plPreview, setPlPreview] = useState<{ videoId: string; title: string; duration: string }[]>([]);
+  const [plPlaylistTitle, setPlPlaylistTitle] = useState("");
+  const filteredChaptersForPlaylist = useRef<any[]>([]);
+
   // Note form
   const [showNoteForm, setShowNoteForm] = useState(false);
   const [noteTitle, setNoteTitle] = useState("");
@@ -78,6 +89,58 @@ const AdminContent = () => {
 
   const filteredChaptersForLecture = chapters.filter((c) => c.course_id === lecCourseId);
   const filteredChaptersForNote = chapters.filter((c) => c.course_id === noteCourseId);
+  const filteredChaptersForPl = chapters.filter((c) => c.course_id === plCourseId);
+
+  // Fetch playlist videos via edge function
+  const handleFetchPlaylist = async () => {
+    if (!plUrl.trim()) return toast.error("Paste a YouTube playlist URL");
+    setPlImporting(true);
+    setPlPreview([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("youtube-playlist", {
+        body: { url: plUrl.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const videos = data?.videos || [];
+      if (!videos.length) throw new Error("No videos found in playlist");
+      setPlPreview(videos);
+      setPlPlaylistTitle(data?.playlistTitle || "");
+      toast.success(`Found ${videos.length} videos`);
+    } catch (e: any) {
+      toast.error(e.message || "Could not fetch playlist");
+    } finally {
+      setPlImporting(false);
+    }
+  };
+
+  const handleImportPlaylist = async () => {
+    if (!plCourseId || !plChapterId) return toast.error("Select course and chapter");
+    if (!plPreview.length) return toast.error("Fetch playlist first");
+    setPlImporting(true);
+    const startOrder = lectures.filter((l) => l.chapter_id === plChapterId).length;
+    let ok = 0, fail = 0;
+    for (let i = 0; i < plPreview.length; i++) {
+      const v = plPreview[i];
+      try {
+        await new Promise<void>((resolve, reject) => {
+          createLecture.mutate({
+            course_id: plCourseId, chapter_id: plChapterId, title: v.title,
+            youtube_id: v.videoId, duration: v.duration,
+            free_preview: plFirstTwoFree && i < 2,
+            sort_order: startOrder + i,
+          }, { onSuccess: () => resolve(), onError: (e) => reject(e) });
+        });
+        ok++;
+      } catch {
+        fail++;
+      }
+    }
+    setPlImporting(false);
+    toast.success(`Imported ${ok} lectures${fail ? ` (${fail} failed)` : ""}`);
+    setShowPlaylistForm(false);
+    setPlUrl(""); setPlPreview([]); setPlPlaylistTitle("");
+  };
 
   const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -324,8 +387,82 @@ const AdminContent = () => {
 
         {/* LECTURES TAB */}
         <TabsContent value="videos" className="space-y-3 mt-3">
+          <div className="grid grid-cols-2 gap-2">
+            <Button className="w-full" onClick={() => setShowLectureForm(true)}>
+              <Upload className="w-4 h-4 mr-2" /> Single Lecture
+            </Button>
+            <Button variant="secondary" className="w-full" onClick={() => setShowPlaylistForm(true)}>
+              <ListVideo className="w-4 h-4 mr-2" /> Import Playlist
+            </Button>
+          </div>
+
+          <Dialog open={showPlaylistForm} onOpenChange={setShowPlaylistForm}>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>Import YouTube Playlist</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Course *</Label>
+                  <Select value={plCourseId} onValueChange={(v) => { setPlCourseId(v); setPlChapterId(""); }}>
+                    <SelectTrigger><SelectValue placeholder="Select course" /></SelectTrigger>
+                    <SelectContent>{courses.map((c) => <SelectItem key={c.id} value={c.id}>{c.thumbnail_emoji} {c.title}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                {plCourseId && (
+                  <div className="space-y-1">
+                    <Label className="text-xs">Chapter *</Label>
+                    <Select value={plChapterId} onValueChange={setPlChapterId}>
+                      <SelectTrigger><SelectValue placeholder="Select chapter" /></SelectTrigger>
+                      <SelectContent>{filteredChaptersForPl.map((ch) => <SelectItem key={ch.id} value={ch.id}>{ch.title}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <Label className="text-xs">YouTube Playlist URL *</Label>
+                  <Input placeholder="https://youtube.com/playlist?list=..." value={plUrl} onChange={(e) => setPlUrl(e.target.value)} />
+                  <p className="text-[10px] text-muted-foreground">Paste any public or unlisted YouTube playlist link — all videos will be split into individual lectures.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch checked={plFirstTwoFree} onCheckedChange={setPlFirstTwoFree} />
+                  <Label className="text-xs">Mark first 2 lectures as free preview</Label>
+                </div>
+                <Button variant="secondary" className="w-full" onClick={handleFetchPlaylist} disabled={plImporting || !plUrl}>
+                  {plImporting && !plPreview.length ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Fetching...</>
+                  ) : (
+                    <><Eye className="w-4 h-4 mr-2" /> Fetch Videos</>
+                  )}
+                </Button>
+
+                {plPreview.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold truncate">{plPlaylistTitle || "Playlist"}</p>
+                      <Badge variant="secondary" className="text-[10px]">{plPreview.length} videos</Badge>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto border rounded-lg divide-y">
+                      {plPreview.map((v, i) => (
+                        <div key={v.videoId + i} className="flex items-center gap-2 p-2 text-xs">
+                          <span className="text-muted-foreground w-5 text-right">{i + 1}.</span>
+                          <img src={`https://i.ytimg.com/vi/${v.videoId}/default.jpg`} alt="" className="w-10 h-7 object-cover rounded shrink-0" />
+                          <span className="flex-1 truncate">{v.title}</span>
+                          <span className="text-[10px] text-muted-foreground shrink-0">{v.duration}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button className="w-full" onClick={handleImportPlaylist} disabled={plImporting || !plCourseId || !plChapterId}>
+                      {plImporting ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Importing...</>
+                      ) : (
+                        <>Import {plPreview.length} lectures</>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <Dialog open={showLectureForm} onOpenChange={setShowLectureForm}>
-            <DialogTrigger asChild><Button className="w-full"><Upload className="w-4 h-4 mr-2" /> Add Video Lecture</Button></DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>Add Video Lecture</DialogTitle></DialogHeader>
               <div className="space-y-3">
