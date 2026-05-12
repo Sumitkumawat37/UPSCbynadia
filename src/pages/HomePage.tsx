@@ -146,6 +146,8 @@ const HomePage = () => {
               </div>
             </Card>
           ))}
+        </div>
+      </div>
 
       {/* Student Reviews */}
       <div>
