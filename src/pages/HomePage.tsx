@@ -28,7 +28,7 @@ const HomePage = () => {
           <img 
             src={teacherBanner} 
             alt="Teacher Banner" 
-            className="absolute inset-0 w-full h-full object-cover object-[30%_center]" 
+            className="absolute inset-0 w-full h-full object-cover object-right-bottom" 
           />
           <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/40 to-transparent" />
           <div className="absolute inset-0 p-4 flex flex-col justify-center">
