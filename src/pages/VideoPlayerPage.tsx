@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLecture, useCourses, useDoubts, useCreateDoubt, useLectureProgress, useUpsertLectureProgress } from "@/lib/supabase-data";
 import { usePurchase } from "@/lib/purchase-context";
 import { useAuth } from "@/lib/auth-context";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, CheckCircle, Send, MessageCircle, Lock, Eye, Play, Maximize, Minimize, X } from "lucide-react";
+import { ChevronLeft, CheckCircle, Send, MessageCircle, Lock, Eye, Play, Maximize, Minimize, X, ShieldCheck, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { useAntiPiracy } from "@/hooks/useAntiPiracy";
+import { WatermarkOverlay } from "@/components/protection/WatermarkOverlay";
+import { TabBlurOverlay } from "@/components/protection/TabBlurOverlay";
 
 declare global {
   interface Window {
@@ -31,11 +31,19 @@ const VideoPlayerPage = () => {
   const [newDoubt, setNewDoubt] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [ytProgress, setYtProgress] = useState({ currentTime: 0, duration: 0 });
+  const [tabResumed, setTabResumed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const autoCompletedRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const ytIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
+
+  const { isTabHidden, devToolsOpen } = useAntiPiracy({ enabled: true });
+
+  // Re-arm blur protection each time user returns to the tab
+  useEffect(() => {
+    if (!isTabHidden) setTabResumed(false);
+  }, [isTabHidden]);
 
   const course = courses.find((c) => c.id === courseId);
   const myProgress = progressData.find((p) => p.lecture_id === lectureId);
@@ -150,24 +158,34 @@ const VideoPlayerPage = () => {
 
   const ytProgressPercent = ytProgress.duration > 0 ? (ytProgress.currentTime / ytProgress.duration) * 100 : 0;
 
-  if (!lecture || !course) return <div className="p-8 text-center text-muted-foreground">Lecture not found</div>;
+  if (!lecture || !course) return (
+    <div className="p-8 text-center">
+      <div className="w-12 h-12 rounded-2xl gradient-hero flex items-center justify-center mx-auto mb-3">
+        <Play className="w-6 h-6 text-white" />
+      </div>
+      <p className="text-slate-400 text-sm">Lecture not found</p>
+    </div>
+  );
 
   if (!canAccess) {
     return (
       <div className="space-y-4 animate-slide-up">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ChevronLeft className="w-4 h-4" /> Back
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors">
+          <ChevronLeft className="w-4 h-4" /> Back to {course.title}
         </button>
-        <Card className="p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-destructive" />
+        <div className="bg-white rounded-3xl p-8 text-center shadow-md border border-slate-50">
+          <div className="w-16 h-16 rounded-2xl bg-rose-100 flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-rose-500" />
           </div>
-          <h2 className="text-lg font-bold">Lecture Locked</h2>
-          <p className="text-muted-foreground text-sm mt-2">Purchase this course to unlock all lectures.</p>
-          <Button className="mt-4" onClick={() => navigate(`/courses/${courseId}`)}>
-            Go to Course
-          </Button>
-        </Card>
+          <h2 className="text-lg font-bold text-slate-800">Lecture Locked</h2>
+          <p className="text-slate-400 text-sm mt-2">Purchase this course to unlock all lectures.</p>
+          <button
+            className="btn-action ripple mt-5 px-6 py-3 rounded-2xl text-sm font-bold"
+            onClick={() => navigate(`/courses/${courseId}`)}
+          >
+            View Course →
+          </button>
+        </div>
       </div>
     );
   }
@@ -217,21 +235,43 @@ const VideoPlayerPage = () => {
 
   return (
     <div className="space-y-4 animate-slide-up">
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="w-4 h-4" /> Back to {course.title}
-      </button>
 
-      {/* Native-style Video Player */}
+      {/* Back nav */}
+      <div className="flex items-center justify-between">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors press">
+          <ChevronLeft className="w-4 h-4" /> Back
+        </button>
+        {/* Protection indicator */}
+        <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-emerald-100">
+          <ShieldCheck className="w-3 h-3" />
+          Protected Content
+        </div>
+      </div>
+
+      {/* DevTools warning */}
+      {devToolsOpen && (
+        <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 animate-slide-up">
+          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+          <p className="text-amber-700 text-xs font-semibold">Developer tools detected. Content protection is active.</p>
+        </div>
+      )}
+
+      {/* Desktop 2-col: player area left, doubts right */}
+      <div className="md:grid md:grid-cols-[1.6fr_1fr] md:gap-6 md:items-start">
+      <div className="space-y-4">
+
+      {/* PREMIUM VIDEO PLAYER */}
       <div
         ref={videoContainerRef}
-        className={`relative overflow-hidden shadow-lg transition-all duration-300 ${
-          isFullscreen 
-            ? "fixed inset-0 z-50 rounded-none border-none bg-black flex items-center justify-center" 
-            : "rounded-2xl bg-foreground/5 border border-border"
+        className={`relative overflow-hidden shadow-2xl transition-all duration-300 ${
+          isFullscreen
+            ? "fixed inset-0 z-50 rounded-none bg-black flex items-center justify-center"
+            : "rounded-3xl bg-slate-950 border border-slate-800 shadow-slate-900/50"
         }`}
+        data-protected
         onContextMenu={(e) => e.preventDefault()}
       >
-        <div className={`bg-black relative ${isFullscreen ? "w-full h-full" : "w-full aspect-video"}`}>
+        <div className={`bg-slate-950 relative ${isFullscreen ? "w-full h-full" : "w-full aspect-video"}`}>
           {hasUploadedVideo ? (
             <video
               ref={videoRef}
@@ -319,101 +359,120 @@ const VideoPlayerPage = () => {
           </button>
         )}
 
-        {/* EduMaster Badge */}
+        {/* Anti-piracy Watermark */}
+        <WatermarkOverlay visible={!isFullscreen} />
+
+        {/* Tab-switch blur overlay */}
+        <TabBlurOverlay
+          visible={isTabHidden && !tabResumed}
+          onResume={() => setTabResumed(true)}
+        />
+
+        {/* Branding badge */}
         {!isFullscreen && (
-          <div className="absolute top-2 right-2 pointer-events-none z-10">
-            <Badge className="bg-primary/90 text-primary-foreground text-[10px] backdrop-blur-sm shadow-md">
-              EduMaster Lecture
-            </Badge>
+          <div className="absolute top-3 right-3 pointer-events-none z-10">
+            <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm text-white text-[9px] font-bold px-2.5 py-1 rounded-full border border-white/10">
+              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              UPSC Nadiya
+            </div>
           </div>
         )}
 
         {/* Free Preview Badge */}
         {lecture.free_preview && !isFullscreen && (
-          <div className="absolute top-2 left-2 pointer-events-none z-10">
-            <Badge className="bg-success text-success-foreground text-[10px]">
-              <Eye className="w-3 h-3 mr-0.5" /> Free Preview
-            </Badge>
+          <div className="absolute top-3 left-3 pointer-events-none z-10">
+            <div className="flex items-center gap-1 bg-emerald-500/90 text-white text-[9px] font-bold px-2.5 py-1 rounded-full">
+              <Eye className="w-3 h-3" /> Free Preview
+            </div>
           </div>
         )}
       </div>
 
-      {/* Lecture Info */}
-      <div>
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h2 className="text-lg font-bold">{lecture.title}</h2>
-            <p className="text-muted-foreground text-sm">{course.title} · {(lecture as any).chapters?.title}</p>
+      {/* Lecture info + complete */}
+      <div className="bg-white rounded-3xl p-4 shadow-md border border-slate-50">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base font-bold text-slate-800 leading-snug">{lecture.title}</h2>
+            <p className="text-slate-400 text-xs mt-0.5">{course.title}</p>
+            {lecture.duration && (
+              <p className="text-slate-400 text-[10px] mt-1">Duration: {lecture.duration}</p>
+            )}
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {completed && <Badge className="bg-success text-success-foreground">Completed</Badge>}
-          </div>
+          {completed ? (
+            <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-emerald-100 shrink-0">
+              <CheckCircle className="w-3.5 h-3.5" /> Completed
+            </div>
+          ) : (
+            <button
+              onClick={handleMarkComplete}
+              className="flex items-center gap-1.5 btn-primary text-[10px] font-bold px-3 py-1.5 rounded-full shrink-0"
+            >
+              <CheckCircle className="w-3.5 h-3.5" /> Mark Done
+            </button>
+          )}
         </div>
       </div>
 
-      {/* About Section */}
-      <Card className="p-4">
-        <h3 className="font-semibold text-sm mb-2">About this lecture</h3>
-        <p className="text-muted-foreground text-sm">
-          In this lecture, you'll learn about {lecture.title.toLowerCase()} with step-by-step examples and practice problems.
-          Duration: {lecture.duration}.
-        </p>
-      </Card>
+      </div>{/* end left column */}
 
-      {/* Mark Complete Button */}
-      {!completed && (
-        <Button onClick={handleMarkComplete} className="w-full" size="lg">
-          <CheckCircle className="w-4 h-4 mr-2" /> Mark as Completed
-        </Button>
-      )}
+      {/* RIGHT COLUMN: doubts */}
+      <div className="space-y-3 mt-4 md:mt-0">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-xl gradient-hero flex items-center justify-center">
+            <MessageCircle className="w-3.5 h-3.5 text-white" />
+          </div>
+          <h3 className="font-bold text-sm text-slate-800">Doubts & Discussion</h3>
+        </div>
 
-      {/* Doubts Section */}
-      <div>
-        <h3 className="font-bold text-base mb-3 flex items-center gap-2">
-          <MessageCircle className="w-4 h-4 text-primary" /> Doubts & Discussion
-        </h3>
-
-        <Card className="p-3 mb-3">
+        <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-50">
           <Textarea
             placeholder="Ask a doubt about this lecture..."
             value={newDoubt}
             onChange={(e) => setNewDoubt(e.target.value)}
             rows={2}
+            className="rounded-2xl border-sky-100 bg-sky-50/50 text-slate-800 resize-none input-glow text-sm"
           />
-          <Button size="sm" className="mt-2 w-full" onClick={handleSubmitDoubt}>
-            <Send className="w-3 h-3 mr-1" /> Submit Doubt
-          </Button>
-        </Card>
+          <button
+            className="btn-primary ripple w-full mt-3 py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
+            onClick={handleSubmitDoubt}
+          >
+            <Send className="w-3.5 h-3.5" /> Submit Doubt
+          </button>
+        </div>
 
         {lectureDoubts.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {lectureDoubts.map((d) => (
-              <Card key={d.id} className="p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                    {d.student_name.split(" ").map((n: string) => n[0]).join("")}
+              <div key={d.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-50 animate-slide-up">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-full gradient-hero flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                    {d.student_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                   </div>
-                  <span className="text-xs font-medium">{d.student_name}</span>
+                  <span className="text-xs font-semibold text-slate-700">{d.student_name}</span>
                   {d.reply ? (
-                    <Badge className="bg-success/10 text-success border-0 text-[10px]">Answered</Badge>
+                    <span className="ml-auto bg-emerald-50 text-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded-full border border-emerald-100">Answered</span>
                   ) : (
-                    <Badge className="bg-warning/10 text-warning border-0 text-[10px]">Pending</Badge>
+                    <span className="ml-auto bg-amber-50 text-amber-600 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-100">Pending</span>
                   )}
                 </div>
-                <p className="text-sm">{d.question}</p>
+                <p className="text-sm text-slate-700">{d.question}</p>
                 {d.reply && (
-                  <div className="bg-accent/50 rounded-lg p-2 mt-2">
-                    <p className="text-[10px] font-medium text-primary">Teacher's Reply</p>
-                    <p className="text-xs text-muted-foreground">{d.reply}</p>
+                  <div className="bg-sky-50 rounded-xl p-3 mt-2.5 border border-sky-100">
+                    <p className="text-[9px] font-bold text-sky-600 uppercase tracking-wide mb-1">Teacher's Reply</p>
+                    <p className="text-xs text-slate-600">{d.reply}</p>
                   </div>
                 )}
-              </Card>
+              </div>
             ))}
           </div>
         ) : (
-          <p className="text-center text-muted-foreground text-sm py-4">No doubts yet for this lecture</p>
+          <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-slate-50">
+            <MessageCircle className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+            <p className="text-slate-400 text-sm">No doubts yet. Be the first to ask!</p>
+          </div>
         )}
-      </div>
+      </div>{/* end right column */}
+      </div>{/* end 2-col grid */}
     </div>
   );
 };

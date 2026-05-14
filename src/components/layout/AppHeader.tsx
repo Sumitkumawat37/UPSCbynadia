@@ -1,7 +1,6 @@
-import { Bell, GraduationCap, LogOut, Search, Settings, User } from "lucide-react";
+import { Bell, GraduationCap, LogOut, User } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { useAnnouncements } from "@/lib/supabase-data";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -127,62 +126,67 @@ export function AppHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
-      <div className="max-w-5xl mx-auto px-4 py-3">
+    <header className="sticky top-0 z-30 glass border-b border-white/60 shadow-sm shadow-sky-100/50">
+      <div className="px-4 md:px-8 py-2.5">
         <div className="flex items-center justify-between">
-          {/* Logo and Title */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl gradient-primary flex items-center justify-center shadow-lg">
-              <GraduationCap className="w-6 h-6 text-white" />
+          {/* Logo — mobile only (desktop uses sidebar) */}
+          <div className="flex items-center gap-2.5 md:hidden">
+            <div className="relative w-9 h-9 rounded-2xl gradient-hero flex items-center justify-center shadow-lg shadow-sky-300/40 animate-float-slow">
+              <GraduationCap className="w-5 h-5 text-white" />
+              <div className="absolute inset-0 rounded-2xl bg-white/20 animate-pulse" style={{ animationDuration: '3s' }} />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground leading-tight">UPSC by Nadiya Ma'am</h1>
-              <Badge variant="secondary" className="text-[10px] px-2 py-0 h-4 font-medium">
+              <h1 className="text-sm font-bold text-slate-800 leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                UPSC <span className="text-primary">Nadiya</span>
+              </h1>
+              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold ${
+                role === "admin"
+                  ? "bg-violet-100 text-violet-600"
+                  : "bg-sky-100 text-sky-600"
+              }`}>
+                <span className={`w-1 h-1 rounded-full ${role === "admin" ? "bg-violet-500" : "bg-sky-500"} animate-pulse`} />
                 {role === "admin" ? "Teacher" : "Student"}
-              </Badge>
+              </div>
             </div>
           </div>
 
-          {/* Right Actions */}
-          <div className="flex items-center gap-2">
-            {/* Search Bar (desktop only) */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-xl border border-border/40">
-              <Search className="w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="bg-transparent border-none outline-none text-sm placeholder-muted-foreground w-32 lg:w-48"
-              />
-            </div>
+          {/* Desktop: greeting text */}
+          <div className="hidden md:flex items-center gap-2">
+            <p className="text-sm font-bold text-slate-700" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              Welcome back, <span className="text-primary">{user?.name?.split(' ')[0] ?? 'there'}</span> 👋
+            </p>
+          </div>
 
+          {/* Right Actions */}
+          <div className="flex items-center gap-1.5">
             {/* Notifications */}
             <button
               onClick={handleBellClick}
-              className="relative w-10 h-10 rounded-xl bg-muted/50 hover:bg-muted transition-all duration-200 flex items-center justify-center border border-border/40"
+              className="relative w-9 h-9 rounded-2xl bg-white/80 hover:bg-white transition-all duration-200 flex items-center justify-center shadow-sm shadow-sky-100 border border-sky-100 hover:shadow-md hover:border-sky-200 hover:scale-105 active:scale-95"
             >
-              <Bell className="w-5 h-5 text-foreground" />
+              <Bell className="w-4 h-4 text-slate-600" />
               {unread > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center font-bold shadow-sm">
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-gradient-to-r from-red-400 to-rose-500 rounded-full text-[9px] text-white flex items-center justify-center font-bold shadow-md animate-pop-in">
                   {unread > 9 ? "9+" : unread}
                 </span>
               )}
             </button>
 
-            {/* Profile/Settings */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => navigate("/profile")}
-                className="w-10 h-10 rounded-xl bg-muted/50 hover:bg-muted transition-all duration-200 flex items-center justify-center border border-border/40"
-              >
-                <User className="w-5 h-5 text-foreground" />
-              </button>
-              <button
-                onClick={() => { logout(); navigate("/login"); }}
-                className="w-10 h-10 rounded-xl bg-destructive/10 hover:bg-destructive/20 transition-all duration-200 flex items-center justify-center border border-destructive/20"
-              >
-                <LogOut className="w-5 h-5 text-destructive" />
-              </button>
-            </div>
+            {/* Profile — mobile only (sidebar handles it on desktop) */}
+            <button
+              onClick={() => navigate("/profile")}
+              className="md:hidden w-9 h-9 rounded-2xl bg-white/80 hover:bg-white transition-all duration-200 flex items-center justify-center shadow-sm shadow-sky-100 border border-sky-100 hover:shadow-md hover:scale-105 active:scale-95"
+            >
+              <User className="w-4 h-4 text-slate-600" />
+            </button>
+
+            {/* Logout — mobile only */}
+            <button
+              onClick={() => { logout(); navigate("/login"); }}
+              className="md:hidden w-9 h-9 rounded-2xl bg-red-50 hover:bg-red-100 transition-all duration-200 flex items-center justify-center border border-red-100 hover:border-red-200 hover:scale-105 active:scale-95"
+            >
+              <LogOut className="w-4 h-4 text-red-400" />
+            </button>
           </div>
         </div>
       </div>

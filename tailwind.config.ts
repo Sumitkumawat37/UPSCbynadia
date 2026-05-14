@@ -87,10 +87,46 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "float-slow": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
+        "blob-morph": {
+          "0%, 100%": { borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%" },
+          "50%": { borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        "pop-in": {
+          "0%": { opacity: "0", transform: "scale(0.5)" },
+          "70%": { transform: "scale(1.08)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        "pulse-ring": {
+          "0%": { transform: "scale(1)", opacity: "0.7" },
+          "100%": { transform: "scale(2.2)", opacity: "0" },
+        },
+        "spin-slow": {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        float: "float 3s ease-in-out infinite",
+        "float-slow": "float-slow 4.5s ease-in-out infinite",
+        "blob-morph": "blob-morph 8s ease-in-out infinite",
+        shimmer: "shimmer 2.5s linear infinite",
+        "pop-in": "pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1) both",
+        "pulse-ring": "pulse-ring 1.8s ease-out infinite",
+        "spin-slow": "spin-slow 12s linear infinite",
       },
     },
   },
