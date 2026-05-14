@@ -30,6 +30,8 @@ import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
 import AdminLiveClasses from "./pages/admin/AdminLiveClasses";
 import AdminDoubts from "./pages/admin/AdminDoubts";
 import AdminCourseAccess from "./pages/admin/AdminCourseAccess";
+import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
+import SuperAdminUsers from "./pages/superadmin/SuperAdminUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,11 +49,18 @@ function AppRoutes() {
     );
   }
 
+  // Role-based root redirect
+  const rootRedirect = role === "super_admin"
+    ? "/superadmin"
+    : role === "admin"
+    ? "/admin"
+    : "/";
+
   return (
     <AppLayout>
       <Routes>
         {/* Student Routes */}
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={role === "super_admin" ? <Navigate to="/superadmin" replace /> : <HomePage />} />
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/courses/:courseId" element={<CourseDetailPage />} />
@@ -65,7 +74,7 @@ function AppRoutes() {
         <Route path="/live-classes" element={<LiveClassesPage />} />
         <Route path="/doubts" element={<DoubtsPage />} />
 
-        {/* Admin Routes */}
+        {/* Admin (Teacher) Routes */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/content" element={<AdminContent />} />
         <Route path="/admin/quizzes" element={<AdminQuizzes />} />
@@ -75,8 +84,12 @@ function AppRoutes() {
         <Route path="/admin/doubts" element={<AdminDoubts />} />
         <Route path="/admin/access" element={<AdminCourseAccess />} />
 
-        <Route path="/login" element={<Navigate to="/" replace />} />
-        <Route path="/signup" element={<Navigate to="/" replace />} />
+        {/* Super Admin Routes */}
+        <Route path="/superadmin" element={<SuperAdminDashboard />} />
+        <Route path="/superadmin/users" element={<SuperAdminUsers />} />
+
+        <Route path="/login" element={<Navigate to={rootRedirect} replace />} />
+        <Route path="/signup" element={<Navigate to={rootRedirect} replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AppLayout>

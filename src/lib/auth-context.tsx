@@ -1,8 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { User, Session } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 
-type Role = "student" | "admin";
+export type Role = "student" | "admin" | "super_admin";
+
+// Emails that get super_admin role (add yours here for production)
+const SUPER_ADMIN_EMAILS = ["superadmin@demo.com"];
 
 interface AuthState {
   isLoggedIn: boolean;
@@ -28,20 +31,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading: true,
   });
 
-  const fetchRole = async (userId: string): Promise<Role> => {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    if (data && data.some((r) => r.role === "admin")) return "admin";
-    return "student";
-  };
+  // Prevent duplicate calls when both onAuthStateChange + getSession fire
+  const lastSessionToken = useRef<string | null>("__init__");
 
   const setUserFromSession = async (session: Session | null) => {
+    const token = session?.access_token ?? null;
+    if (lastSessionToken.current === token) return;
+    lastSessionToken.current = token;
+
     if (!session?.user) {
       setAuth({ isLoggedIn: false, role: "student", user: null, loading: false });
       return;
     }
     const u = session.user;
-    const role = await fetchRole(u.id);
-    const { data: profile } = await supabase.from("profiles").select("name").eq("user_id", u.id).single();
+
+    // Parallel fetch — 2× faster than sequential
+    const [{ data: roleData }, { data: profile }] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", u.id),
+      supabase.from("profiles").select("name").eq("user_id", u.id).single(),
+    ]);
+
+    const isAdmin = roleData?.some((r) => r.role === "admin") ?? false;
+    const isSuperAdmin = SUPER_ADMIN_EMAILS.includes((u.email ?? "").toLowerCase());
+    const role: Role = isSuperAdmin ? "super_admin" : isAdmin ? "admin" : "student";
+
     setAuth({
       isLoggedIn: true,
       role,
@@ -54,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserFromSession(session);
     });
+    // getSession covers the case where onAuthStateChange hasn't fired yet
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUserFromSession(session);
     });
@@ -61,20 +75,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      // Auto-create demo accounts on first login attempt
-      const isDemoAccount = (email === "student@demo.com" || email === "teacher@demo.com") && password === "123456";
-      if (isDemoAccount) {
-        const name = email === "teacher@demo.com" ? "Teacher Admin" : "Demo Student";
-        const { error: signUpError } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
-        if (signUpError) return false;
-        // Admin role is now handled by the database trigger for teacher@demo.com
-        return true;
-      }
-      return false;
-    }
-    return true;
+    // 1. Try normal sign-in first
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+    if (!signInErr) return true;
+
+    // 2. For demo accounts — auto-create if missing, then retry
+    const demoEmails = ["student@demo.com", "teacher@demo.com", "superadmin@demo.com"];
+    if (!demoEmails.includes(email) || password !== "123456") return false;
+
+    const name = email === "teacher@demo.com" ? "Teacher Admin"
+               : email === "superadmin@demo.com" ? "Super Admin"
+               : "Demo Student";
+
+    // Attempt signup — ignore errors ("already registered" is fine)
+    await supabase.auth.signUp({ email, password, options: { data: { name } } });
+
+    // 3. Retry sign-in (works when email confirmation is disabled)
+    const { error: retryErr } = await supabase.auth.signInWithPassword({ email, password });
+    return !retryErr;
   };
 
   const signup = async (email: string, password: string, name: string): Promise<boolean> => {
@@ -92,7 +110,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    // Instantly clear UI state, then sign out in background
+    lastSessionToken.current = null;
+    setAuth({ isLoggedIn: false, role: "student", user: null, loading: false });
+    supabase.auth.signOut();
   };
 
   const switchRole = (role: Role) => {

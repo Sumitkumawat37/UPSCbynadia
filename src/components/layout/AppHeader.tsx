@@ -140,12 +140,14 @@ export function AppHeader() {
                 UPSC <span className="text-primary">Nadiya</span>
               </h1>
               <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold ${
-                role === "admin"
+                role === "super_admin"
+                  ? "bg-amber-100 text-amber-600"
+                  : role === "admin"
                   ? "bg-violet-100 text-violet-600"
                   : "bg-sky-100 text-sky-600"
               }`}>
-                <span className={`w-1 h-1 rounded-full ${role === "admin" ? "bg-violet-500" : "bg-sky-500"} animate-pulse`} />
-                {role === "admin" ? "Teacher" : "Student"}
+                <span className={`w-1 h-1 rounded-full animate-pulse ${role === "super_admin" ? "bg-amber-500" : role === "admin" ? "bg-violet-500" : "bg-sky-500"}`} />
+                {role === "super_admin" ? "Admin" : role === "admin" ? "Teacher" : "Student"}
               </div>
             </div>
           </div>

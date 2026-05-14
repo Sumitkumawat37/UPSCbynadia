@@ -1,4 +1,4 @@
-import { Home, BookOpen, FileText, Trophy, User, LayoutDashboard, Users, Megaphone, Video, MessageCircle, Lock, Calendar, BarChart3 } from "lucide-react";
+import { Home, BookOpen, Trophy, User, LayoutDashboard, Users, Video, UserCog } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 
@@ -18,9 +18,17 @@ const adminNav = [
   { to: "/admin/live", icon: Video, label: "Live" },
 ];
 
+const superAdminNav = [
+  { to: "/superadmin",       icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/superadmin/users", icon: UserCog,         label: "Users" },
+  { to: "/admin/content",    icon: BookOpen,        label: "Content" },
+  { to: "/admin/students",   icon: Users,           label: "Students" },
+  { to: "/admin/live",       icon: Video,           label: "Live" },
+];
+
 export function BottomNav() {
   const { role } = useAuth();
-  const items = role === "admin" ? adminNav : studentNav;
+  const items = role === "super_admin" ? superAdminNav : role === "admin" ? adminNav : studentNav;
   const location = useLocation();
 
   return (
@@ -29,8 +37,9 @@ export function BottomNav() {
         <div className="glass rounded-3xl border border-white/70 shadow-xl shadow-sky-200/30 px-2 py-2">
           <div className="flex justify-around items-center">
             {items.map((item) => {
+              const exactRoutes = ["/", "/admin", "/superadmin"];
               const isActive = location.pathname === item.to ||
-                (item.to !== "/" && item.to !== "/admin" && location.pathname.startsWith(item.to));
+                (!exactRoutes.includes(item.to) && location.pathname.startsWith(item.to));
               return (
                 <NavLink
                   key={item.to}

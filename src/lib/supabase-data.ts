@@ -243,6 +243,18 @@ export function useAttendance(liveClassId?: string) {
   });
 }
 
+// User roles (for super admin)
+export function useUserRoles() {
+  return useQuery({
+    queryKey: ["user_roles"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("user_roles").select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 // Profiles (for admin)
 export function useProfiles() {
   return useQuery({

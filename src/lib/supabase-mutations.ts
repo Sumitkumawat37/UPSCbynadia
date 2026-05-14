@@ -268,6 +268,38 @@ export function useMarkAttendance() {
   });
 }
 
+// Super Admin: User Role Management
+export function useSetUserRole() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, role }: { userId: string; role: "admin" | "student" }) => {
+      await supabase.from("user_roles").delete().eq("user_id", userId);
+      if (role === "admin") {
+        const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: "admin" });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["user_roles"] });
+      qc.invalidateQueries({ queryKey: ["profiles"] });
+    },
+  });
+}
+
+export function useDeleteProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { error } = await supabase.from("profiles").delete().eq("user_id", userId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["profiles"] });
+      qc.invalidateQueries({ queryKey: ["user_roles"] });
+    },
+  });
+}
+
 // Announcements
 export function useDeleteAnnouncement() {
   const qc = useQueryClient();

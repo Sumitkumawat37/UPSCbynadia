@@ -10,14 +10,14 @@ const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<"student" | "admin">("student");
+  const [role, setRole] = useState<"student" | "teacher" | "admin">("student");
   const [email, setEmail] = useState("student@demo.com");
   const [password, setPassword] = useState("123456");
   const [loading, setLoading] = useState(false);
 
-  const handleRoleSwitch = (r: "student" | "admin") => {
+  const handleRoleSwitch = (r: "student" | "teacher" | "admin") => {
     setRole(r);
-    setEmail(r === "admin" ? "teacher@demo.com" : "student@demo.com");
+    setEmail(r === "teacher" ? "teacher@demo.com" : r === "admin" ? "superadmin@demo.com" : "student@demo.com");
     setPassword("123456");
   };
 
@@ -86,14 +86,20 @@ const LoginPage = () => {
       <div className="flex-1 flex items-start md:items-center justify-center px-4 pt-0 pb-8 md:py-0 -mt-8 md:mt-0 relative z-10">
         <div className="w-full max-w-sm">
           <div className="bg-white rounded-3xl shadow-2xl shadow-sky-200/40 border border-sky-50 p-5 animate-slide-up">
-            <div className="flex gap-2 bg-sky-50 p-1.5 rounded-2xl mb-5">
-              {(['student', 'admin'] as const).map((r) => (
+            <div className="flex gap-1.5 bg-sky-50 p-1.5 rounded-2xl mb-5">
+              {(['student', 'teacher', 'admin'] as const).map((r) => (
                 <button
                   key={r}
                   onClick={() => handleRoleSwitch(r)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ripple press ${role === r ? 'bg-white shadow-md text-sky-600 scale-[1.02]' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ripple press ${
+                    role === r
+                      ? r === 'admin'
+                        ? 'bg-white shadow-md text-amber-600 scale-[1.02]'
+                        : 'bg-white shadow-md text-sky-600 scale-[1.02]'
+                      : 'text-slate-400 hover:text-slate-600'
+                  }`}
                 >
-                  {r === 'student' ? 'Student' : 'Teacher'}
+                  {r === 'student' ? 'Student' : r === 'teacher' ? 'Teacher' : 'Admin'}
                 </button>
               ))}
             </div>
@@ -134,6 +140,7 @@ const LoginPage = () => {
                 <p className="text-[10px] font-bold text-sky-600 mb-1 uppercase tracking-wide">Demo Credentials</p>
                 <p className="text-[10px] text-slate-500">Student: student@demo.com / 123456</p>
                 <p className="text-[10px] text-slate-500">Teacher: teacher@demo.com / 123456</p>
+                <p className="text-[10px] text-amber-600 font-semibold mt-0.5">Admin: superadmin@demo.com / 123456</p>
               </div>
 
               <button
