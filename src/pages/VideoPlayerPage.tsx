@@ -32,11 +32,14 @@ const VideoPlayerPage = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [ytProgress, setYtProgress] = useState({ currentTime: 0, duration: 0 });
   const [tabResumed, setTabResumed] = useState(false);
+  const [videoStarted, setVideoStarted] = useState(false);
+  const [wasPlaying, setWasPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const autoCompletedRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const ytIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
+  const ytPlayerRef = useRef<any>(null);
 
   const { isTabHidden, devToolsOpen } = useAntiPiracy({ enabled: true });
 
@@ -77,6 +80,37 @@ const VideoPlayerPage = () => {
   const hasYoutubeVideo = !!youtubeId;
   const hasUploadedVideo = videoUrl && videoUrl.trim().length > 0;
 
+  // Pause video when tab is hidden, resume when visible
+  useEffect(() => {
+    if (isTabHidden) {
+      // Pause uploaded video
+      if (hasUploadedVideo && videoRef.current) {
+        setWasPlaying(!videoRef.current.paused);
+        videoRef.current.pause();
+      }
+      // Pause YouTube video
+      if (hasYoutubeVideo && iframeRef.current?.contentWindow) {
+        setWasPlaying(true);
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
+          "*"
+        );
+      }
+    } else {
+      // Resume uploaded video if it was playing
+      if (hasUploadedVideo && videoRef.current && wasPlaying) {
+        videoRef.current.play().catch(() => {});
+      }
+      // Resume YouTube video if it was playing
+      if (hasYoutubeVideo && iframeRef.current?.contentWindow && wasPlaying) {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func: "playVideo", args: [] }),
+          "*"
+        );
+      }
+    }
+  }, [isTabHidden, hasUploadedVideo, hasYoutubeVideo, wasPlaying]);
+
   // Auto-complete when 80% watched
   const handleAutoComplete = useCallback(() => {
     if (!user || completed || autoCompletedRef.current) return;
@@ -109,7 +143,7 @@ const VideoPlayerPage = () => {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [hasUploadedVideo, completed, handleAutoComplete]);
 
-  // Track YouTube iframe progress via postMessage API
+  // Track YouTube iframe progress via postMessage API and handle auto-fullscreen
   useEffect(() => {
     if (!hasYoutubeVideo) return;
     autoCompletedRef.current = completed;
@@ -126,6 +160,14 @@ const VideoPlayerPage = () => {
           const pct = (currentTime / duration) * 100;
           if (pct >= 80 && !autoCompletedRef.current && !completed) {
             handleAutoComplete();
+          }
+        }
+        // Detect when video starts playing for auto-fullscreen
+        if (data?.event === "onStateChange" && data?.info === 1 && !videoStarted) {
+          setVideoStarted(true);
+          // Request fullscreen when video starts
+          if (videoContainerRef.current && !isFullscreen) {
+            videoContainerRef.current.requestFullscreen?.().catch(() => {});
           }
         }
       } catch { /* ignore non-JSON messages */ }
@@ -147,7 +189,26 @@ const VideoPlayerPage = () => {
       window.removeEventListener("message", handleMessage);
       if (ytIntervalRef.current) clearInterval(ytIntervalRef.current);
     };
-  }, [hasYoutubeVideo, completed, handleAutoComplete]);
+  }, [hasYoutubeVideo, completed, handleAutoComplete, videoStarted, isFullscreen]);
+
+  // Auto-fullscreen for uploaded videos when they start playing
+  useEffect(() => {
+    if (!hasUploadedVideo) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handlePlay = () => {
+      if (!videoStarted) {
+        setVideoStarted(true);
+        if (videoContainerRef.current && !isFullscreen) {
+          videoContainerRef.current.requestFullscreen?.().catch(() => {});
+        }
+      }
+    };
+
+    video.addEventListener("play", handlePlay);
+    return () => video.removeEventListener("play", handlePlay);
+  }, [hasUploadedVideo, videoStarted, isFullscreen]);
 
   // Format time as mm:ss
   const formatTime = (seconds: number) => {
@@ -214,21 +275,22 @@ const VideoPlayerPage = () => {
     setNewDoubt("");
   };
 
-  // Build YouTube embed URL with privacy-enhanced mode
+  // Build YouTube embed URL with privacy-enhanced mode and hidden branding
   const getYoutubeEmbedUrl = () => {
     if (!hasYoutubeVideo) return "";
     const params = new URLSearchParams({
       modestbranding: "1",
       rel: "0",
       controls: "1",
-      playsinline: "1",
+      playsinline: "0",
       showinfo: "0",
       iv_load_policy: "3",
-      fs: "1",
+      fs: "0",
       cc_load_policy: "0",
-      disablekb: "0",
+      disablekb: "1",
       enablejsapi: "1",
       origin: window.location.origin,
+      widgetid: "1",
     });
     return `https://www.youtube-nocookie.com/embed/${youtubeId}?${params.toString()}`;
   };
@@ -253,6 +315,14 @@ const VideoPlayerPage = () => {
         <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 animate-slide-up">
           <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
           <p className="text-amber-700 text-xs font-semibold">Developer tools detected. Content protection is active.</p>
+        </div>
+      )}
+
+      {/* Screen recording notice - technical limitation */}
+      {!isFullscreen && (
+        <div className="flex items-center gap-3 bg-rose-50 border border-rose-200 rounded-2xl px-4 py-3 animate-slide-up">
+          <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
+          <p className="text-rose-700 text-xs font-semibold">Screen recording cannot be prevented in web browsers due to technical limitations. Watermark and tab protection are active.</p>
         </div>
       )}
 
@@ -292,27 +362,29 @@ const VideoPlayerPage = () => {
                 title={lecture.title}
                 className="absolute w-full h-full"
                 style={{
-                  top: '-60px',
+                  top: '-100px',
                   left: 0,
                   width: '100%',
-                  height: 'calc(100% + 120px)',
+                  height: 'calc(100% + 200px)',
                 }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
                 allowFullScreen={false}
               />
-              {/* Top overlay */}
-              <div className="absolute top-0 left-0 right-0 h-12 z-[5] pointer-events-auto" style={{ background: 'linear-gradient(to bottom, #000 60%, transparent)' }} />
-              {/* Bottom overlay */}
-              <div className="absolute bottom-0 left-0 right-0 h-20 z-[5] pointer-events-none" style={{ background: 'linear-gradient(to top, #000 50%, transparent)' }} />
-              {/* Bottom-right - blocks Watch on YouTube */}
-              <div className="absolute bottom-0 right-0 w-44 h-16 bg-black z-[6] pointer-events-auto" />
-              {/* Top-right - blocks menu */}
-              <div className="absolute top-0 right-0 w-16 h-12 bg-black z-[6] pointer-events-auto" />
-              {/* Top-left - blocks logo */}
-              <div className="absolute top-0 left-0 w-12 h-12 bg-black z-[6] pointer-events-auto" />
+              {/* Top overlay - gradient to hide YouTube header completely */}
+              <div className="absolute top-0 left-0 right-0 h-24 z-[5] pointer-events-auto" style={{ background: 'linear-gradient(to bottom, #000 80%, transparent)' }} />
+              {/* Bottom overlay - gradient to hide YouTube footer */}
+              <div className="absolute bottom-0 left-0 right-0 h-28 z-[5] pointer-events-none" style={{ background: 'linear-gradient(to top, #000 70%, transparent)' }} />
+              {/* Bottom-right - blocks Watch on YouTube button */}
+              <div className="absolute bottom-0 right-0 w-56 h-24 bg-black z-[6] pointer-events-auto" />
+              {/* Top-right - blocks YouTube menu button */}
+              <div className="absolute top-0 right-0 w-24 h-20 bg-black z-[6] pointer-events-auto" />
+              {/* Top-left - blocks YouTube logo completely */}
+              <div className="absolute top-0 left-0 w-32 h-20 bg-black z-[6] pointer-events-auto" />
+              {/* Additional overlay for YouTube title area */}
+              <div className="absolute top-20 left-0 right-0 h-12 bg-black z-[6] pointer-events-auto" />
               
               {/* Custom Progress Bar */}
-              <div className="absolute bottom-0 left-0 right-0 z-[8] px-3 pb-2 pointer-events-none">
+              <div className="absolute bottom-0 left-0 right-0 z-[8] px-3 pb-4 pointer-events-none">
                 <div className="flex items-center gap-2">
                   {/* Time display */}
                   <span className="text-[10px] text-white/90 font-medium min-w-[70px]">
@@ -320,7 +392,7 @@ const VideoPlayerPage = () => {
                   </span>
                   {/* Progress bar */}
                   <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
                       style={{ width: `${ytProgressPercent}%` }}
                     />
