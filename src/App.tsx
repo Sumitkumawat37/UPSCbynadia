@@ -37,30 +37,11 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { isLoggedIn, role } = useAuth();
-
-  if (!isLoggedIn) {
-    return (
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    );
-  }
-
-  // Role-based root redirect
-  const rootRedirect = role === "super_admin"
-    ? "/superadmin"
-    : role === "admin"
-    ? "/admin"
-    : "/";
-
   return (
     <AppLayout>
       <Routes>
         {/* Student Routes */}
-        <Route path="/" element={role === "super_admin" ? <Navigate to="/superadmin" replace /> : <HomePage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/dashboard" element={<StudentDashboard />} />
         <Route path="/courses" element={<CoursesPage />} />
         <Route path="/courses/:courseId" element={<CourseDetailPage />} />
@@ -88,8 +69,6 @@ function AppRoutes() {
         <Route path="/superadmin" element={<SuperAdminDashboard />} />
         <Route path="/superadmin/users" element={<SuperAdminUsers />} />
 
-        <Route path="/login" element={<Navigate to={rootRedirect} replace />} />
-        <Route path="/signup" element={<Navigate to={rootRedirect} replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AppLayout>
