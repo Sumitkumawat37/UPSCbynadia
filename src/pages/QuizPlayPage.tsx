@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuizQuestions, useSubmitQuizAttempt } from "@/lib/supabase-data";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, CheckCircle, XCircle, Trophy } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
@@ -29,17 +30,42 @@ const QuizPlayPage = () => {
     setAnswers(newAnswers);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitted(true);
     if (user && quizId) {
-      const s = answers.reduce((acc, a, i) => acc + (a === questions[i]?.correct_index ? 1 : 0), 0);
+      const correct = answers.reduce((acc, a, i) => acc + (a === questions[i]?.correct_index ? 1 : 0), 0);
+      const wrong = answers.reduce((acc, a, i) => acc + (a !== null && a !== questions[i]?.correct_index ? 1 : 0), 0);
+      const unanswered = answers.filter((a) => a === null).length;
+
       submitAttempt.mutate({
         quiz_id: quizId,
         user_id: user.id,
-        score: s,
+        score: correct,
         total: questions.length,
         answers: answers.map((a) => a ?? -1),
       });
+
+      // Fetch quiz title then send result email
+      try {
+        const { data: quiz } = await supabase.from("quizzes").select("title").eq("id", quizId).single();
+        await fetch("http://localhost:5000/api/v1/email-center/send-quiz-result", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            studentName: user.name || user.email,
+            studentEmail: user.email,
+            quizTitle: quiz?.title || "Quiz",
+            score: correct,
+            total: questions.length,
+            correct,
+            wrong,
+            unanswered,
+            frontendUrl: window.location.origin,
+          }),
+        });
+      } catch {
+        // Email failure should not block the quiz result screen
+      }
     }
   };
 

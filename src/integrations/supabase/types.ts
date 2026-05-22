@@ -110,6 +110,7 @@ export type Database = {
           description: string
           id: string
           instructor: string
+          instructor_image: string | null
           price: number
           thumbnail_emoji: string | null
           thumbnail_url: string | null
@@ -123,6 +124,7 @@ export type Database = {
           description?: string
           id?: string
           instructor?: string
+          instructor_image?: string | null
           price?: number
           thumbnail_emoji?: string | null
           thumbnail_url?: string | null
@@ -136,6 +138,7 @@ export type Database = {
           description?: string
           id?: string
           instructor?: string
+          instructor_image?: string | null
           price?: number
           thumbnail_emoji?: string | null
           thumbnail_url?: string | null

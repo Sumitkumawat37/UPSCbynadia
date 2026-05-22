@@ -9,14 +9,21 @@ export default {
       center: true,
       padding: "1rem",
       screens: {
-        "2xl": "1400px",
+        "2xl": "1440px",
       },
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-primary)", "system-ui", "sans-serif"],
+        heading: ["var(--font-heading)", "sans-serif"],
       },
       colors: {
+        /* Design System Colors */
+        "neon-purple": "var(--neon-purple)",
+        "neon-pink": "var(--neon-pink)",
+        "soft-violet": "var(--soft-violet)",
+        
+        /* Tailwind CSS Variables (for compatibility) */
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -74,9 +81,27 @@ export default {
         },
       },
       borderRadius: {
+        button: "var(--radius-button)",
+        card: "var(--radius-card)",
+        input: "var(--radius-input)",
+        pill: "var(--radius-pill)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
+        "card-hover": "var(--shadow-hover)",
+        button: "var(--shadow-button)",
+      },
+      spacing: {
+        "container-desktop": "var(--container-padding-desktop)",
+        "container-mobile": "var(--container-padding-mobile)",
+      },
+      transitionDuration: {
+        fast: "var(--transition-fast)",
+        normal: "var(--transition-normal)",
+        slow: "var(--transition-slow)",
       },
       keyframes: {
         "accordion-down": {

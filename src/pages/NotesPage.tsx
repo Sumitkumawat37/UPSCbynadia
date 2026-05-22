@@ -3,19 +3,58 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNotes, useCourses } from "@/lib/supabase-data";
 import { usePurchase } from "@/lib/purchase-context";
-import { FileText, Download, Lock } from "lucide-react";
-import { useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { FileText, Download, Lock, X, ShieldAlert } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useScreenProtection } from "@/hooks/useScreenProtection";
+import { DriveNotesIntegration } from "@/components/DriveNotesIntegration";
 
 const NotesPage = () => {
+  const { role } = useAuth();
   const [selectedCourse, setSelectedCourse] = useState<string>("all");
+  const [selectedNote, setSelectedNote] = useState<any>(null);
+  const [isTabBlurred, setIsTabBlurred] = useState(false);
   const { hasPurchased } = usePurchase();
   const { data: notes = [] } = useNotes(selectedCourse);
   const { data: courses = [] } = useCourses();
+  const isScreenProtected = useScreenProtection();
+
+  useEffect(() => {
+    const handleBlur = () => setIsTabBlurred(true);
+    const handleFocus = () => setIsTabBlurred(false);
+
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
+  const getEmbedUrl = (fileUrl: string) => {
+    if (!fileUrl) return '';
+    // Convert Google Drive link to embed format
+    if (fileUrl.includes('drive.google.com')) {
+      const match = fileUrl.match(/\/file\/d\/([^\/]+)/);
+      if (match) {
+        return `https://drive.google.com/file/d/${match[1]}/preview?rm=minimal`;
+      }
+    }
+    // For direct PDF links, use Google Docs Viewer with proper sizing
+    if (fileUrl.endsWith('.pdf')) {
+      return `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(fileUrl)}&rm=minimal`;
+    }
+    return fileUrl;
+  };
+
+  const scrollRef = useScrollReveal();
 
   return (
-    <div className="space-y-4 animate-slide-up">
-      <h2 className="text-xl font-bold">Study Material</h2>
+    <div className="space-y-4 animate-slide-up" ref={scrollRef}>
+      <h2 className="text-xl font-bold animate-text-glow">Study Material</h2>
 
       <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
         <Button
@@ -39,16 +78,18 @@ const NotesPage = () => {
         ))}
       </div>
 
+      {(role === 'admin' || role === 'super_admin') && <DriveNotesIntegration />}
+
       <div className="space-y-2">
         {notes.map((note, i) => {
           const purchased = hasPurchased(note.course_id);
           return (
-            <Card key={note.id} className={`p-3 flex items-center gap-3 ${!purchased ? "opacity-70" : ""}`} style={{ animationDelay: `${i * 60}ms` }}>
-              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+            <Card key={note.id} className={`p-3 flex items-center gap-3 reveal spotlight-card ${!purchased ? "opacity-70" : ""}`} style={{ transitionDelay: `${i * 35}ms` }}>
+              <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0 icon-glass">
                 {purchased ? (
-                  <FileText className="w-5 h-5 text-destructive" />
+                  <FileText className="w-5 h-5 text-destructive icon-glow-purple" />
                 ) : (
-                  <Lock className="w-5 h-5 text-muted-foreground" />
+                  <Lock className="w-5 h-5 text-muted-foreground icon-glow-purple" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
@@ -59,18 +100,69 @@ const NotesPage = () => {
                 )}
               </div>
               {purchased ? (
-                <Button size="sm" variant="ghost" className="shrink-0" onClick={() => toast.success("Download started — demo only")}>
-                  <Download className="w-4 h-4" />
+                <Button size="sm" variant="ghost" className="shrink-0" onClick={() => setSelectedNote(note)}>
+                  <Download className="w-4 h-4 icon-glow-purple" />
                 </Button>
               ) : (
                 <Badge variant="secondary" className="text-[10px]">
-                  <Lock className="w-2.5 h-2.5 mr-0.5" /> Locked
+                  <Lock className="w-2.5 h-2.5 mr-0.5 icon-glow-purple" /> Locked
                 </Badge>
               )}
             </Card>
           );
         })}
       </div>
+
+      {selectedNote && (
+        <div className="fixed inset-0 bg-black z-50 flex flex-col animate-fade-in">
+          <div className="flex items-center justify-between p-3 md:p-4 bg-[#12122a] border-b border-purple-500/15 z-10 shrink-0">
+            <h3 className="font-semibold text-sm md:text-base truncate pr-4">{selectedNote.title}</h3>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedNote(null)}>
+              <X className="w-5 h-5 icon-glow-purple" />
+            </Button>
+          </div>
+          <div className="flex-1 overflow-hidden relative bg-[#0a0a1a]" style={{ minHeight: 'calc(100vh - 60px)' }}>
+            {(isTabBlurred || isScreenProtected) ? (
+              <div className="absolute inset-0 bg-black flex items-center justify-center z-50">
+                <div className="text-center space-y-4 px-4">
+                  <ShieldAlert className="w-16 h-16 mx-auto text-red-500" />
+                  <div>
+                    <p className="text-white text-lg font-semibold">Content Protected</p>
+                    <p className="text-gray-400 text-sm mt-2">Return to this tab to view the content</p>
+                    <p className="text-gray-500 text-xs mt-1">Screenshots and screen recording are disabled</p>
+                  </div>
+                </div>
+              </div>
+            ) : selectedNote.file_url ? (
+              <>
+                <iframe
+                  src={getEmbedUrl(selectedNote.file_url)}
+                  className="absolute inset-0 w-full h-full border-0"
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  title={selectedNote.title}
+                  allowFullScreen
+                  sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                />
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-10">
+                  <div className="bg-black/70 text-white text-xs px-3 py-2 rounded">
+                    Screenshots are disabled
+                  </div>
+                </div>
+                <div className="absolute top-4 right-4 pointer-events-none opacity-5 text-xs md:text-sm rotate-45 z-10">
+                  {selectedNote.title} - UPSC Nadiya
+                </div>
+                <div className="absolute bottom-4 left-4 pointer-events-none opacity-5 text-xs md:text-sm -rotate-45 z-10">
+                  {selectedNote.title} - UPSC Nadiya
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                No file URL available
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

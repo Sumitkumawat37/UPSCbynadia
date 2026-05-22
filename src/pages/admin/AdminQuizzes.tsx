@@ -57,8 +57,10 @@ const AdminQuizzes = () => {
   };
 
   return (
-    <div className="space-y-4 animate-slide-up">
-      <h2 className="text-xl font-bold">Quiz Management</h2>
+    <div className="space-y-6 animate-slide-up">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Quiz Management</h2>
+      </div>
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogTrigger asChild><Button className="w-full"><Plus className="w-4 h-4 mr-2" /> Create New Quiz</Button></DialogTrigger>
         <DialogContent>
@@ -88,27 +90,30 @@ const AdminQuizzes = () => {
       </Dialog>
 
       <div className="space-y-3">
-        {quizzes.map((quiz) => (
-          <Card key={quiz.id} className="p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-3 flex-1 min-w-0" onClick={() => setExpandedQuiz(expandedQuiz === quiz.id ? null : quiz.id)}>
-                <div className="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center shrink-0 cursor-pointer"><Trophy className="w-5 h-5 text-warning" /></div>
-                <div className="min-w-0">
-                  <h4 className="font-semibold text-sm">{quiz.title}</h4>
-                  <p className="text-xs text-muted-foreground">{(quiz as any).courses?.title} · {quiz.duration}</p>
+        {quizzes.map((q) => (
+          <Card key={q.id} className="p-4 bg-card border border-border shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <h3 className="font-semibold text-foreground">{q.title}</h3>
+                  <Badge variant="secondary" className="text-[10px] shrink-0">{q.duration}</Badge>
                 </div>
+                <p className="text-xs text-muted-foreground mb-2">{q.courses?.title || "No course"}</p>
+                <p className="text-xs text-muted-foreground">{questions.filter((qs) => qs.quiz_id === q.id).length} questions</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Badge variant={quiz.status === "available" ? "default" : "secondary"}>{quiz.status}</Badge>
-                <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteQuiz.mutate(quiz.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
+                <Button size="sm" variant="ghost" onClick={() => setExpandedQuiz(expandedQuiz === q.id ? null : q.id)}>
+                  {expandedQuiz === q.id ? <Eye className="w-3.5 h-3.5" /> : <ListPlus className="w-3.5 h-3.5" />}
+                </Button>
+                <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteQuiz.mutate(q.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
               </div>
             </div>
 
-            {expandedQuiz === quiz.id && (
+            {expandedQuiz === q.id && (
               <div className="mt-3 space-y-2 border-t pt-3">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-medium text-muted-foreground">{questions.length} questions</p>
-                  <Dialog open={showQForm && qQuizId === quiz.id} onOpenChange={(o) => { setShowQForm(o); if (o) setQQuizId(quiz.id); }}>
+                  <Dialog open={showQForm && qQuizId === q.id} onOpenChange={(o) => { setShowQForm(o); if (o) setQQuizId(q.id); }}>
                     <DialogTrigger asChild><Button size="sm" variant="secondary"><ListPlus className="w-3 h-3 mr-1" /> Add Question</Button></DialogTrigger>
                     <DialogContent>
                       <DialogHeader><DialogTitle>Add Question</DialogTitle></DialogHeader>

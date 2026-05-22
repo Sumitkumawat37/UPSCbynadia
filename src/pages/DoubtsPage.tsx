@@ -7,6 +7,7 @@ import { useDoubts, useCreateDoubt } from "@/lib/supabase-data";
 import { useAuth } from "@/lib/auth-context";
 import { MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const DoubtsPage = () => {
   const [newDoubt, setNewDoubt] = useState("");
@@ -32,23 +33,25 @@ const DoubtsPage = () => {
     return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   };
 
-  return (
-    <div className="space-y-4 animate-slide-up">
-      <h2 className="text-xl font-bold">My Doubts</h2>
+  const scrollRef = useScrollReveal();
 
-      <Card className="p-4 space-y-3">
+  return (
+    <div className="space-y-4 animate-slide-up" ref={scrollRef}>
+      <h2 className="text-xl font-bold animate-text-glow">My Doubts</h2>
+
+      <Card className="p-4 space-y-3 reveal spotlight-card">
         <h3 className="font-semibold text-sm flex items-center gap-2">
-          <MessageCircle className="w-4 h-4 text-primary" /> Ask a Question
+          <MessageCircle className="w-4 h-4 text-primary icon-glow-purple" /> Ask a Question
         </h3>
         <Textarea placeholder="Type your doubt or question here..." value={newDoubt} onChange={(e) => setNewDoubt(e.target.value)} rows={3} />
         <Button className="w-full" onClick={handleSubmit}>
-          <Send className="w-4 h-4 mr-2" /> Submit Doubt
+          <Send className="w-4 h-4 mr-2 icon-glow-purple" /> Submit Doubt
         </Button>
       </Card>
 
       <div className="space-y-3">
-        {doubts.map((d) => (
-          <Card key={d.id} className="p-4">
+        {doubts.map((d, i) => (
+          <Card key={d.id} className="p-4 reveal" style={{ transitionDelay: `${i * 35}ms` }}>
             <div className="flex items-start gap-2 mb-2">
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
                 {d.student_name.split(" ").map((n: string) => n[0]).join("")}

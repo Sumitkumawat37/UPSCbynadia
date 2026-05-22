@@ -1,24 +1,44 @@
-import { useMemo } from "react";
-import { useCourses, useQuizAttempts, useLectureProgress, useLectures } from "@/lib/supabase-data";
+import { useMemo, useEffect, useState } from "react";
+import { useCourses, useQuizAttempts, useLectures } from "@/lib/supabase-data";
 import { usePurchase } from "@/lib/purchase-context";
+import { useAuth } from "@/lib/auth-context";
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from "recharts";
-import { BookOpen, Trophy, Video, CheckCircle, TrendingUp, ChevronRight, Flame, Target, Star } from "lucide-react";
+import { BookOpen, Trophy, Video, CheckCircle, TrendingUp, ChevronRight, Flame, Target, Star, AlertTriangle } from "lucide-react";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { hasPurchased } = usePurchase();
   const { data: courses = [] } = useCourses();
   const { data: lectures = [] } = useLectures();
   const { data: attempts = [] } = useQuizAttempts();
-  const { data: progress = [] } = useLectureProgress();
 
-  const completedLectures = progress.filter((p) => p.completed).length;
+  const [stats, setStats] = useState<any>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!user) return;
+      try {
+        const res = await fetch(`http://localhost:5000/api/v1/upsc/analytics?userId=${user.id}`);
+        const data = await res.json();
+        if (data.success) {
+          setStats(data.data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+    fetchStats();
+  }, [user]);
+
+  const completedLectures = stats?.completedLectures || 0;
   const totalLectures = lectures.length;
   const lecturePercent = totalLectures > 0 ? Math.round((completedLectures / totalLectures) * 100) : 0;
-  const avgQuizScore = attempts.length > 0
-    ? Math.round(attempts.reduce((a, b) => a + (b.total > 0 ? (b.score / b.total) * 100 : 0), 0) / attempts.length)
-    : 0;
+  const avgQuizScore = stats?.avgAccuracy || 0;
 
   const purchasedCourses = courses.filter((c) => hasPurchased(c.id));
 
@@ -27,23 +47,20 @@ const StudentDashboard = () => {
     score: a.total > 0 ? Math.round((a.score / a.total) * 100) : 0,
   }));
 
-  const stats = [
+  const statCards = [
     { icon: BookOpen,     label: "Courses",      value: purchasedCourses.length.toString(), grad: "from-sky-400 to-cyan-500",     delay: 0 },
     { icon: Trophy,       label: "Avg Score",    value: `${avgQuizScore}%`,                 grad: "from-emerald-400 to-teal-500",delay: 70 },
     { icon: Video,        label: "Lectures",     value: `${completedLectures}/${totalLectures}`, grad: "from-violet-400 to-purple-500", delay: 140 },
-    { icon: CheckCircle,  label: "Quizzes",      value: attempts.length.toString(),         grad: "from-amber-400 to-orange-500",delay: 210 },
+    { icon: CheckCircle,  label: "Quizzes",      value: (stats?.totalQuizzes || attempts.length).toString(), grad: "from-amber-400 to-orange-500",delay: 210 },
   ];
 
   const barColors = ["#0ea5e9", "#06b6d4", "#8b5cf6", "#10b981", "#f59e0b", "#f43f5e"];
 
-  // Streak: consecutive days with a completed lecture (simulated from progress data)
-  const streakDays = useMemo(() => {
-    if (completedLectures === 0) return 0;
-    return Math.min(completedLectures * 2, 30); // Simulated streak
-  }, [completedLectures]);
+  // Streak
+  const streakDays = stats?.studyStreak || 0;
 
-  // XP system: each completed lecture = 50xp, each quiz = 100xp
-  const totalXP = completedLectures * 50 + attempts.length * 100;
+  // XP system
+  const totalXP = completedLectures * 50 + (stats?.totalQuizzes || attempts.length) * 100;
   const xpLevel = Math.floor(totalXP / 500) + 1;
   const xpInLevel = totalXP % 500;
   const xpPercent = Math.round((xpInLevel / 500) * 100);
@@ -51,13 +68,13 @@ const StudentDashboard = () => {
   const levelNames = ["Beginner", "Aspirant", "Seeker", "Scholar", "Expert", "Champion", "Master"];
   const levelName = levelNames[Math.min(xpLevel - 1, levelNames.length - 1)];
 
-  // Daily goal: complete 3 lectures per day (simple heuristic)
+  // Daily goal
   const dailyGoalTarget = 3;
   const dailyGoalDone = Math.min(completedLectures % dailyGoalTarget || (completedLectures > 0 ? dailyGoalTarget : 0), dailyGoalTarget);
   const dailyGoalPercent = Math.round((dailyGoalDone / dailyGoalTarget) * 100);
 
   return (
-    <div className="space-y-4 animate-slide-up">
+    <div className="space-y-6 animate-slide-up">
 
       {/* ── HEADER ── */}
       <div className="relative overflow-hidden rounded-3xl gradient-hero p-4 shadow-lg shadow-sky-300/20">
@@ -158,7 +175,7 @@ const StudentDashboard = () => {
 
       {/* ── STAT CARDS ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 stagger">
-        {stats.map((stat) => (
+        {statCards.map((stat) => (
           <div
             key={stat.label}
             className="bg-white rounded-3xl p-4 shadow-md border border-slate-50 text-center animate-slide-up card-interactive group-item"

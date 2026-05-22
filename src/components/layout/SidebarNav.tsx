@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, BookOpen, FileText, Trophy, User, LayoutDashboard, Users, Megaphone, Video, MessageCircle, Bell, BarChart3, GraduationCap, LogOut, Lock, UserCog, Crown } from "lucide-react";
+import { Home, BookOpen, FileText, Trophy, User, LayoutDashboard, Users, Megaphone, Video, MessageCircle, Bell, BarChart3, GraduationCap, LogOut, Lock, UserCog, Crown, Mail } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 
@@ -21,9 +21,11 @@ const superAdminOwnNav = [
 ];
 
 const superAdminMgmtNav = [
-  { to: "/admin/content",       icon: BookOpen,      label: "Content",       end: false },
+  { to: "/admin/content",       icon: BookOpen,      label: "Course",        end: false },
   { to: "/admin/students",      icon: Users,         label: "Students",      end: false },
   { to: "/admin/quizzes",       icon: Trophy,        label: "Quizzes",       end: false },
+  { to: "/notes",               icon: FileText,      label: "Notes",         end: false },
+  { to: "/admin/email-center",  icon: Mail,          label: "Email Center",  end: false },
   { to: "/admin/live",          icon: Video,         label: "Live Classes",  end: false },
   { to: "/admin/announcements", icon: Megaphone,     label: "Announcements", end: false },
   { to: "/admin/doubts",        icon: MessageCircle, label: "Doubts",        end: false },
@@ -32,27 +34,31 @@ const superAdminMgmtNav = [
 
 const adminNav = [
   { to: "/admin",                icon: LayoutDashboard, label: "Dashboard",     end: true },
-  { to: "/admin/content",        icon: BookOpen,        label: "Content",       end: false },
+  { to: "/admin/profile",        icon: User,            label: "My Profile",    end: false },
+  { to: "/admin/content",        icon: BookOpen,        label: "Course",        end: false },
   { to: "/admin/quizzes",        icon: Trophy,          label: "Quizzes",       end: false },
+  { to: "/notes",                icon: FileText,        label: "Notes",         end: false },
   { to: "/admin/students",       icon: Users,           label: "Students",      end: false },
+  { to: "/admin/email-center",   icon: Mail,            label: "Email Center",  end: false },
   { to: "/admin/live",           icon: Video,           label: "Live Classes",  end: false },
   { to: "/admin/announcements",  icon: Megaphone,       label: "Announcements", end: false },
   { to: "/admin/doubts",         icon: MessageCircle,   label: "Doubts",        end: false },
   { to: "/admin/access",         icon: Lock,            label: "Course Access", end: false },
 ];
 
-const navLink = (item: { to: string; icon: React.ElementType; label: string; end: boolean }, activeClass: string, hoverClass: string) => (
+const navLink = (item: { to: string; icon: React.ElementType; label: string; end: boolean }, activeClass: string, hoverClass: string, index: number = 0) => (
   <NavLink
     key={item.to}
     to={item.to}
     end={item.end}
     className={({ isActive }) =>
-      `flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 group ${
-        isActive ? activeClass : `text-slate-500 ${hoverClass} hover:scale-[1.01]`
+      `group flex items-center gap-3 px-5 py-3 rounded-lg text-sm font-medium transition-all duration-200 animate-slide-in-left ${
+        isActive ? `${activeClass}` : `text-gray-400 ${hoverClass}`
       }`
     }
+    style={{ animationDelay: `${index * 40}ms` }}
   >
-    <item.icon style={{ width: 17, height: 17 }} className="shrink-0 transition-transform duration-200 group-hover:scale-110" />
+    <item.icon style={{ width: 18, height: 18 }} className="shrink-0 transition-transform duration-200" />
     {item.label}
   </NavLink>
 );
@@ -64,88 +70,72 @@ export function SidebarNav() {
   const isSuperAdmin = role === "super_admin";
   const isAdmin = role === "admin";
 
-  const avatarBg = isSuperAdmin
-    ? "bg-gradient-to-br from-amber-400 to-orange-500"
-    : "gradient-hero";
-
   return (
-    <aside className={`hidden md:flex flex-col fixed top-0 left-0 h-screen w-64 z-40 backdrop-blur-xl border-r shadow-xl ${
-      isSuperAdmin
-        ? "bg-amber-50/95 border-amber-100 shadow-amber-100/50"
-        : "bg-white/90 border-slate-100 shadow-slate-100/50"
-    }`}>
-
+    <aside className="hidden md:flex flex-col fixed top-0 left-0 h-screen w-72 z-40 bg-[#0d0d20]/95 backdrop-blur-xl border-r border-purple-500/10 shadow-xl shadow-purple-900/20">
       {/* Logo */}
-      <div className={`px-5 py-5 border-b ${isSuperAdmin ? "border-amber-100" : "border-slate-50"}`}>
+      <div className="px-6 py-6 border-b border-purple-500/10">
         <div className="flex items-center gap-3">
-          <div className={`relative w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg shrink-0 ${
-            isSuperAdmin
-              ? "bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-300/40"
-              : "gradient-hero shadow-sky-300/40"
-          }`}>
-            {isSuperAdmin ? <Crown className="w-5 h-5 text-white" /> : <GraduationCap className="w-5 h-5 text-white" />}
-            <div className="absolute inset-0 rounded-2xl bg-white/20 animate-pulse" style={{ animationDuration: '3s' }} />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 animate-glow-breathe icon-container-glow">
+            <GraduationCap className="w-5 h-5 text-white icon-glow-purple icon-animated-pulse" />
           </div>
           <div>
-            <p className="font-extrabold text-slate-800 text-sm leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
-              UPSC <span className={isSuperAdmin ? "text-amber-500" : "text-primary"}>Nadiya</span>
+            <p className="font-bold text-white text-base" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              UPSC <span className="text-shimmer">Nadiya</span>
             </p>
-            <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full mt-0.5 ${
-              isSuperAdmin ? "bg-amber-100 text-amber-600" : isAdmin ? "bg-violet-100 text-violet-600" : "bg-sky-100 text-sky-600"
+            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full mt-0.5 ${
+              isSuperAdmin ? "bg-amber-500/20 text-amber-400" : isAdmin ? "bg-purple-500/20 text-purple-400" : "bg-pink-500/20 text-pink-400"
             }`}>
-              {isSuperAdmin
-                ? <><Crown style={{width:9,height:9}} /> Admin Panel</>
-                : <><span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isAdmin ? "bg-violet-500" : "bg-sky-500"}`} />{isAdmin ? "Teacher Panel" : "Student Panel"}</>
-              }
+              {isSuperAdmin ? "Super Admin" : isAdmin ? "Teacher" : "Student"}
             </span>
           </div>
         </div>
       </div>
 
       {/* Nav items */}
-      <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
+      <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
         {isSuperAdmin ? (
           <>
-            {/* Owner section */}
-            <p className="text-[9px] font-bold text-amber-400 uppercase tracking-widest px-3 pt-1 pb-1">Admin</p>
-            {superAdminOwnNav.map((item) => navLink(
+            <p className="text-[11px] font-semibold text-purple-400/60 uppercase tracking-wider px-4 mb-2">Admin</p>
+            {superAdminOwnNav.map((item, i) => navLink(
               item,
-              "bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-300/30 scale-[1.02]",
-              "hover:bg-amber-100 hover:text-amber-700"
+              "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20",
+              "hover:bg-white/5",
+              i
             ))}
-            {/* Platform management section */}
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-3 pt-3 pb-1">Manage Platform</p>
-            {superAdminMgmtNav.map((item) => navLink(
+            <p className="text-[11px] font-semibold text-purple-400/60 uppercase tracking-wider px-4 mb-2 mt-4">Manage Platform</p>
+            {superAdminMgmtNav.map((item, i) => navLink(
               item,
-              "bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-300/30 scale-[1.02]",
-              "hover:bg-amber-100 hover:text-amber-700"
+              "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20",
+              "hover:bg-white/5",
+              i + 3
             ))}
           </>
         ) : (
-          (isAdmin ? adminNav : studentNav).map((item) => navLink(
+          (isAdmin ? adminNav : studentNav).map((item, i) => navLink(
             item,
-            "gradient-hero text-white shadow-lg shadow-sky-300/30 scale-[1.02]",
-            "hover:bg-sky-50 hover:text-sky-600"
+            "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/20",
+            "hover:bg-white/5",
+            i
           ))
         )}
       </nav>
 
       {/* User card + logout */}
-      <div className={`px-4 py-4 border-t space-y-3 ${isSuperAdmin ? "border-amber-100" : "border-slate-50"}`}>
-        <div className="flex items-center gap-2.5 px-1">
-          <div className={`w-9 h-9 rounded-2xl ${avatarBg} flex items-center justify-center text-white text-xs font-extrabold shadow-md shrink-0`}>
+      <div className="px-4 py-4 border-t border-purple-500/10 space-y-3">
+        <div className="flex items-center gap-3 px-3 py-2.5 bg-white/5 rounded-xl border border-purple-500/10">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-md shadow-purple-500/30 icon-container-glow">
             {(user?.name?.[0] ?? user?.email?.[0] ?? "U").toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold text-slate-800 truncate">{user?.name ?? "User"}</p>
-            <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
+            <p className="text-sm font-semibold text-white truncate">{user?.name ?? "User"}</p>
+            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
           </div>
         </div>
         <button
           onClick={() => { logout(); navigate("/login"); }}
-          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-red-50 hover:bg-red-100 text-red-500 text-sm font-semibold transition-all duration-200 hover:scale-[1.01] active:scale-95"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-red-500/10 text-gray-400 hover:text-red-400 text-sm font-medium transition-all duration-200 border border-purple-500/10 hover:border-red-500/20"
         >
-          <LogOut style={{ width: 16, height: 16 }} /> Sign Out
+          <LogOut style={{ width: 18, height: 18 }} className="icon-glow-purple" /> Sign Out
         </button>
       </div>
     </aside>

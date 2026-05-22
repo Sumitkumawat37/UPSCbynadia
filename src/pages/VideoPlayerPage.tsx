@@ -4,9 +4,10 @@ import { useLecture, useCourses, useDoubts, useCreateDoubt, useLectureProgress, 
 import { usePurchase } from "@/lib/purchase-context";
 import { useAuth } from "@/lib/auth-context";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, CheckCircle, Send, MessageCircle, Lock, Eye, Play, Maximize, Minimize, X, ShieldCheck, AlertTriangle } from "lucide-react";
+import { ChevronLeft, CheckCircle, Send, MessageCircle, Lock, Eye, Play, Maximize, Minimize, X, ShieldCheck, AlertTriangle, FastForward, Settings, RotateCcw, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { useAntiPiracy } from "@/hooks/useAntiPiracy";
+import { useScreenProtection } from "@/hooks/useScreenProtection";
 import { WatermarkOverlay } from "@/components/protection/WatermarkOverlay";
 import { TabBlurOverlay } from "@/components/protection/TabBlurOverlay";
 
@@ -34,6 +35,9 @@ const VideoPlayerPage = () => {
   const [tabResumed, setTabResumed] = useState(false);
   const [videoStarted, setVideoStarted] = useState(false);
   const [wasPlaying, setWasPlaying] = useState(false);
+  const [showRecordingWarning, setShowRecordingWarning] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [autoNextEnabled, setAutoNextEnabled] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const autoCompletedRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -41,12 +45,20 @@ const VideoPlayerPage = () => {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const ytPlayerRef = useRef<any>(null);
 
-  const { isTabHidden, devToolsOpen } = useAntiPiracy({ enabled: true });
+  const { isTabHidden, devToolsOpen, screenRecordingDetected } = useAntiPiracy({ enabled: true });
+  const isScreenProtected = useScreenProtection();
 
   // Re-arm blur protection each time user returns to the tab
   useEffect(() => {
     if (!isTabHidden) setTabResumed(false);
   }, [isTabHidden]);
+
+  // Show warning when screen recording is detected
+  useEffect(() => {
+    if (screenRecordingDetected) {
+      setShowRecordingWarning(true);
+    }
+  }, [screenRecordingDetected]);
 
   const course = courses.find((c) => c.id === courseId);
   const myProgress = progressData.find((p) => p.lecture_id === lectureId);
@@ -79,12 +91,29 @@ const VideoPlayerPage = () => {
   const videoUrl = lecture?.video_url;
   const hasYoutubeVideo = !!youtubeId;
   const hasUploadedVideo = videoUrl && videoUrl.trim().length > 0;
+  
+  // Detect if video URL is a Drive link
+  const isDriveVideo = videoUrl?.includes('drive.google.com') || false;
+  const hasDriveVideo = isDriveVideo;
+  
+  // Custom play button state
+  const [showPlayButton, setShowPlayButton] = useState(true);
+
+  // Get Drive embed URL
+  const getDriveEmbedUrl = () => {
+    if (!isDriveVideo || !videoUrl) return "";
+    const match = videoUrl.match(/\/file\/d\/([^\/]+)/);
+    if (match) {
+      return `https://drive.google.com/file/d/${match[1]}/preview?rm=minimal`;
+    }
+    return videoUrl;
+  };
 
   // Pause video when tab is hidden, resume when visible
   useEffect(() => {
     if (isTabHidden) {
       // Pause uploaded video
-      if (hasUploadedVideo && videoRef.current) {
+      if (hasUploadedVideo && !isDriveVideo && videoRef.current) {
         setWasPlaying(!videoRef.current.paused);
         videoRef.current.pause();
       }
@@ -98,7 +127,7 @@ const VideoPlayerPage = () => {
       }
     } else {
       // Resume uploaded video if it was playing
-      if (hasUploadedVideo && videoRef.current && wasPlaying) {
+      if (hasUploadedVideo && !isDriveVideo && videoRef.current && wasPlaying) {
         videoRef.current.play().catch(() => {});
       }
       // Resume YouTube video if it was playing
@@ -109,7 +138,7 @@ const VideoPlayerPage = () => {
         );
       }
     }
-  }, [isTabHidden, hasUploadedVideo, hasYoutubeVideo, wasPlaying]);
+  }, [isTabHidden, hasUploadedVideo, hasYoutubeVideo, hasDriveVideo, wasPlaying]);
 
   // Auto-complete when 80% watched
   const handleAutoComplete = useCallback(() => {
@@ -124,11 +153,18 @@ const VideoPlayerPage = () => {
     toast.success("Lecture automatically marked as completed!");
   }, [user, completed, lectureId, upsertProgress]);
 
-  // Track progress for uploaded videos
+  // Resume video from last watched position
   useEffect(() => {
-    autoCompletedRef.current = completed;
     const video = videoRef.current;
     if (!video || !hasUploadedVideo) return;
+
+    // Resume from last position if available
+    if (myProgress?.watched_seconds && myProgress.watched_seconds > 0) {
+      video.currentTime = myProgress.watched_seconds;
+    }
+
+    // Apply playback speed
+    video.playbackRate = playbackSpeed;
 
     const handleTimeUpdate = () => {
       if (video.duration > 0) {
@@ -136,12 +172,33 @@ const VideoPlayerPage = () => {
         if (pct >= 80 && !autoCompletedRef.current) {
           handleAutoComplete();
         }
+        // Save progress periodically
+        if (user && lectureId) {
+          upsertProgress.mutate({
+            user_id: user.id,
+            lecture_id: lectureId!,
+            watched_percent: pct,
+            completed: completed,
+            watched_seconds: video.currentTime
+          });
+        }
       }
     };
 
     video.addEventListener("timeupdate", handleTimeUpdate);
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
-  }, [hasUploadedVideo, completed, handleAutoComplete]);
+  }, [hasUploadedVideo, completed, handleAutoComplete, myProgress, playbackSpeed, user, lectureId, upsertProgress]);
+
+  // Handle playback speed change
+  const handlePlaybackSpeedChange = (speed: number) => {
+    setPlaybackSpeed(speed);
+    if (videoRef.current) {
+      videoRef.current.playbackRate = speed;
+    }
+    if (ytPlayerRef.current && hasYoutubeVideo) {
+      ytPlayerRef.current.setPlaybackRate(speed);
+    }
+  };
 
   // Track YouTube iframe progress via postMessage API and handle auto-fullscreen
   useEffect(() => {
@@ -224,22 +281,22 @@ const VideoPlayerPage = () => {
       <div className="w-12 h-12 rounded-2xl gradient-hero flex items-center justify-center mx-auto mb-3">
         <Play className="w-6 h-6 text-white" />
       </div>
-      <p className="text-slate-400 text-sm">Lecture not found</p>
+      <p className="text-gray-400 text-sm">Lecture not found</p>
     </div>
   );
 
   if (!canAccess) {
     return (
       <div className="space-y-4 animate-slide-up">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
           <ChevronLeft className="w-4 h-4" /> Back to {course.title}
         </button>
-        <div className="bg-white rounded-3xl p-8 text-center shadow-md border border-slate-50">
-          <div className="w-16 h-16 rounded-2xl bg-rose-100 flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-rose-500" />
+        <div className="glass-card rounded-3xl p-8 text-center neon-border">
+          <div className="w-16 h-16 rounded-2xl bg-rose-500/15 flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
+            <Lock className="w-8 h-8 text-rose-400" />
           </div>
-          <h2 className="text-lg font-bold text-slate-800">Lecture Locked</h2>
-          <p className="text-slate-400 text-sm mt-2">Purchase this course to unlock all lectures.</p>
+          <h2 className="text-lg font-bold text-white">Lecture Locked</h2>
+          <p className="text-gray-400 text-sm mt-2">Purchase this course to unlock all lectures.</p>
           <button
             className="btn-action ripple mt-5 px-6 py-3 rounded-2xl text-sm font-bold"
             onClick={() => navigate(`/courses/${courseId}`)}
@@ -300,11 +357,11 @@ const VideoPlayerPage = () => {
 
       {/* Back nav */}
       <div className="flex items-center justify-between">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors press">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors press">
           <ChevronLeft className="w-4 h-4" /> Back
         </button>
         {/* Protection indicator */}
-        <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-emerald-100">
+        <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-3 py-1.5 rounded-full border border-emerald-500/20">
           <ShieldCheck className="w-3 h-3" />
           Protected Content
         </div>
@@ -312,17 +369,17 @@ const VideoPlayerPage = () => {
 
       {/* DevTools warning */}
       {devToolsOpen && (
-        <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 animate-slide-up">
-          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-          <p className="text-amber-700 text-xs font-semibold">Developer tools detected. Content protection is active.</p>
+        <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-3 animate-slide-up">
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          <p className="text-amber-300 text-xs font-semibold">Developer tools detected. Content protection is active.</p>
         </div>
       )}
 
       {/* Screen recording notice - technical limitation */}
       {!isFullscreen && (
-        <div className="flex items-center gap-3 bg-rose-50 border border-rose-200 rounded-2xl px-4 py-3 animate-slide-up">
-          <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
-          <p className="text-rose-700 text-xs font-semibold">Screen recording cannot be prevented in web browsers due to technical limitations. Watermark and tab protection are active.</p>
+        <div className="flex items-center gap-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl px-4 py-3 animate-slide-up">
+          <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+          <p className="text-rose-300 text-xs font-semibold">Screen recording cannot be prevented in web browsers due to technical limitations. Watermark and tab protection are active.</p>
         </div>
       )}
 
@@ -336,24 +393,47 @@ const VideoPlayerPage = () => {
         className={`relative overflow-hidden shadow-2xl transition-all duration-300 ${
           isFullscreen
             ? "fixed inset-0 z-50 rounded-none bg-black flex items-center justify-center"
-            : "rounded-3xl bg-slate-950 border border-slate-800 shadow-slate-900/50"
+            : "rounded-3xl bg-black border border-purple-500/15 shadow-purple-900/30"
         }`}
         data-protected
         onContextMenu={(e) => e.preventDefault()}
       >
-        <div className={`bg-slate-950 relative ${isFullscreen ? "w-full h-full" : "w-full aspect-video"}`}>
+        <div className={`bg-black relative ${isFullscreen ? "w-full h-full" : "w-full aspect-video"}`}>
           {hasUploadedVideo ? (
-            <video
-              ref={videoRef}
-              src={videoUrl}
-              className="w-full h-full object-contain"
-              controls
-              controlsList="nodownload"
-              playsInline
-              poster={lecture.thumbnail_url || undefined}
-            >
-              Your browser does not support the video tag.
-            </video>
+            isDriveVideo ? (
+              <div className="relative w-full h-full overflow-hidden">
+                <iframe
+                  src={getDriveEmbedUrl()}
+                  title={lecture.title}
+                  className="absolute w-full h-full border-0"
+                  allowFullScreen
+                  sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                />
+                {/* Custom play button overlay */}
+                {showPlayButton && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+                    <button
+                      onClick={() => setShowPlayButton(false)}
+                      className="w-20 h-20 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center transition-transform hover:scale-110"
+                    >
+                      <Play className="w-8 h-8 text-white ml-1" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <video
+                ref={videoRef}
+                src={videoUrl}
+                className="w-full h-full object-contain"
+                controls
+                controlsList="nodownload"
+                playsInline
+                poster={lecture.thumbnail_url || undefined}
+              >
+                Your browser does not support the video tag.
+              </video>
+            )
           ) : hasYoutubeVideo ? (
             <div className="relative w-full h-full overflow-hidden">
               <iframe
@@ -406,19 +486,55 @@ const VideoPlayerPage = () => {
                 <Play className="w-8 h-8 text-primary" />
               </div>
               <span className="text-sm">No video added yet for this lecture</span>
-              <span className="text-xs text-muted-foreground/70">Add a YouTube ID or upload a video in admin</span>
+              <span className="text-xs text-muted-foreground/70">Add a YouTube ID, Drive link, or upload a video in admin</span>
             </div>
           )}
         </div>
 
-        {/* Custom Fullscreen Toggle */}
+        {/* Custom Fullscreen Toggle & Playback Controls */}
         {(hasUploadedVideo || hasYoutubeVideo) && (
-          <button
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="absolute bottom-3 right-3 z-[10] bg-black/70 hover:bg-black/90 text-white rounded-lg p-2 transition-colors"
-          >
-            {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-          </button>
+          <div className="absolute bottom-3 right-3 z-[10] flex items-center gap-2">
+            {/* Playback Speed Control */}
+            <div className="relative group">
+              <button className="bg-black/70 hover:bg-black/90 text-white rounded-lg p-2 transition-colors flex items-center gap-1">
+                <FastForward className="w-4 h-4" />
+                <span className="text-xs font-bold">{playbackSpeed}x</span>
+              </button>
+              <div className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-sm rounded-xl p-2 border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity min-w-[120px]">
+                <p className="text-[10px] text-gray-400 font-semibold mb-2 px-1">Playback Speed</p>
+                <div className="space-y-1">
+                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
+                    <button
+                      key={speed}
+                      onClick={() => handlePlaybackSpeedChange(speed)}
+                      className={`w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                        speed === playbackSpeed ? "bg-primary text-white" : "text-gray-300 hover:bg-white/10"
+                      }`}
+                    >
+                      {speed}x
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Auto-Next Toggle */}
+            <button
+              onClick={() => setAutoNextEnabled(!autoNextEnabled)}
+              className={`bg-black/70 hover:bg-black/90 text-white rounded-lg p-2 transition-colors ${autoNextEnabled ? "text-primary" : "text-gray-400"}`}
+              title="Auto-play next lecture"
+            >
+              <FastForward className="w-4 h-4" />
+            </button>
+
+            {/* Fullscreen Toggle */}
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className="bg-black/70 hover:bg-black/90 text-white rounded-lg p-2 transition-colors"
+            >
+              {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+            </button>
+          </div>
         )}
 
         {/* Close button in fullscreen */}
@@ -436,9 +552,26 @@ const VideoPlayerPage = () => {
 
         {/* Tab-switch blur overlay */}
         <TabBlurOverlay
-          visible={isTabHidden && !tabResumed}
+          visible={(isTabHidden && !tabResumed) || isScreenProtected}
           onResume={() => setTabResumed(true)}
         />
+
+        {/* Screen recording warning overlay */}
+        {showRecordingWarning && (
+          <div className="absolute inset-0 z-[50] bg-black/90 flex items-center justify-center p-6">
+            <div className="bg-[#12122a] rounded-2xl p-6 max-w-md w-full text-center border border-purple-500/15">
+              <AlertTriangle className="w-12 h-12 text-rose-400 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-white mb-2">Screen Recording Detected</h3>
+              <p className="text-sm text-gray-400 mb-4">For security reasons, please stop screen recording to continue watching this video.</p>
+              <button
+                onClick={() => setShowRecordingWarning(false)}
+                className="btn-primary w-full py-2.5 rounded-xl text-sm font-bold"
+              >
+                I've Stopped Recording
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Branding badge */}
         {!isFullscreen && (
@@ -461,17 +594,17 @@ const VideoPlayerPage = () => {
       </div>
 
       {/* Lecture info + complete */}
-      <div className="bg-white rounded-3xl p-4 shadow-md border border-slate-50">
+      <div className="glass-card rounded-3xl p-4 neon-border">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-bold text-slate-800 leading-snug">{lecture.title}</h2>
-            <p className="text-slate-400 text-xs mt-0.5">{course.title}</p>
+            <h2 className="text-base font-bold text-white leading-snug">{lecture.title}</h2>
+            <p className="text-gray-500 text-xs mt-0.5">{course.title}</p>
             {lecture.duration && (
-              <p className="text-slate-400 text-[10px] mt-1">Duration: {lecture.duration}</p>
+              <p className="text-gray-500 text-[10px] mt-1">Duration: {lecture.duration}</p>
             )}
           </div>
           {completed ? (
-            <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-emerald-100 shrink-0">
+            <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-3 py-1.5 rounded-full border border-emerald-500/20 shrink-0">
               <CheckCircle className="w-3.5 h-3.5" /> Completed
             </div>
           ) : (
@@ -490,19 +623,19 @@ const VideoPlayerPage = () => {
       {/* RIGHT COLUMN: doubts */}
       <div className="space-y-3 mt-4 md:mt-0">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-xl gradient-hero flex items-center justify-center">
+          <div className="w-7 h-7 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
             <MessageCircle className="w-3.5 h-3.5 text-white" />
           </div>
-          <h3 className="font-bold text-sm text-slate-800">Doubts & Discussion</h3>
+          <h3 className="font-bold text-sm text-white">Doubts & Discussion</h3>
         </div>
 
-        <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-50">
+        <div className="glass-card rounded-3xl p-4 neon-border">
           <Textarea
             placeholder="Ask a doubt about this lecture..."
             value={newDoubt}
             onChange={(e) => setNewDoubt(e.target.value)}
             rows={2}
-            className="rounded-2xl border-sky-100 bg-sky-50/50 text-slate-800 resize-none input-glow text-sm"
+            className="rounded-2xl border-purple-500/15 bg-white/5 text-white resize-none input-glow text-sm"
           />
           <button
             className="btn-primary ripple w-full mt-3 py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
@@ -515,32 +648,32 @@ const VideoPlayerPage = () => {
         {lectureDoubts.length > 0 ? (
           <div className="space-y-2.5">
             {lectureDoubts.map((d) => (
-              <div key={d.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-50 animate-slide-up">
+              <div key={d.id} className="glass-card rounded-2xl p-4 animate-slide-up neon-border">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-full gradient-hero flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
                     {d.student_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                   </div>
-                  <span className="text-xs font-semibold text-slate-700">{d.student_name}</span>
+                  <span className="text-xs font-semibold text-gray-300">{d.student_name}</span>
                   {d.reply ? (
-                    <span className="ml-auto bg-emerald-50 text-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded-full border border-emerald-100">Answered</span>
+                    <span className="ml-auto bg-emerald-500/10 text-emerald-400 text-[9px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/20">Answered</span>
                   ) : (
-                    <span className="ml-auto bg-amber-50 text-amber-600 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-100">Pending</span>
+                    <span className="ml-auto bg-amber-500/10 text-amber-400 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-500/20">Pending</span>
                   )}
                 </div>
-                <p className="text-sm text-slate-700">{d.question}</p>
+                <p className="text-sm text-gray-300">{d.question}</p>
                 {d.reply && (
-                  <div className="bg-sky-50 rounded-xl p-3 mt-2.5 border border-sky-100">
-                    <p className="text-[9px] font-bold text-sky-600 uppercase tracking-wide mb-1">Teacher's Reply</p>
-                    <p className="text-xs text-slate-600">{d.reply}</p>
+                  <div className="bg-purple-500/10 rounded-xl p-3 mt-2.5 border border-purple-500/15">
+                    <p className="text-[9px] font-bold text-purple-400 uppercase tracking-wide mb-1">Teacher's Reply</p>
+                    <p className="text-xs text-gray-400">{d.reply}</p>
                   </div>
                 )}
               </div>
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-slate-50">
-            <MessageCircle className="w-8 h-8 text-slate-200 mx-auto mb-2" />
-            <p className="text-slate-400 text-sm">No doubts yet. Be the first to ask!</p>
+          <div className="glass-card rounded-2xl p-6 text-center neon-border">
+            <MessageCircle className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+            <p className="text-gray-400 text-sm">No doubts yet. Be the first to ask!</p>
           </div>
         )}
       </div>{/* end right column */}

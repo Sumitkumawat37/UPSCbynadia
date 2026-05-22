@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { useQuizAttempts } from "@/lib/supabase-data";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Trophy, TrendingUp } from "lucide-react";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const ResultsPage = () => {
   const { data: attempts = [] } = useQuizAttempts();
@@ -11,21 +12,23 @@ const ResultsPage = () => {
     score: a.total > 0 ? Math.round((a.score / a.total) * 100) : 0,
   }));
 
-  return (
-    <div className="space-y-5 animate-slide-up">
-      <h2 className="text-xl font-bold">Results & Analytics</h2>
+  const scrollRef = useScrollReveal();
 
-      <Card className="p-4">
+  return (
+    <div className="space-y-5 animate-slide-up" ref={scrollRef}>
+      <h2 className="text-xl font-bold animate-text-glow">Results & Analytics</h2>
+
+      <Card className="p-4 reveal spotlight-card">
         <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-primary" /> Performance Overview
+          <TrendingUp className="w-4 h-4 text-primary icon-glow-purple" /> Performance Overview
         </h3>
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={chartData}>
-              <XAxis dataKey="quiz" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="quiz" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
               <YAxis hide domain={[0, 100]} />
-              <Tooltip />
-              <Line type="monotone" dataKey="score" stroke="hsl(217, 91%, 50%)" strokeWidth={2.5} dot={{ r: 4 }} />
+              <Tooltip contentStyle={{ background: '#1a1040', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '0.75rem', color: '#e5e7eb' }} />
+              <Line type="monotone" dataKey="score" stroke="#a855f7" strokeWidth={2.5} dot={{ r: 4, fill: '#a855f7' }} />
             </LineChart>
           </ResponsiveContainer>
         ) : (
@@ -36,10 +39,10 @@ const ResultsPage = () => {
       <div>
         <h3 className="font-bold text-base mb-3">Quiz History</h3>
         <div className="space-y-2">
-          {attempts.map((attempt) => (
-            <Card key={attempt.id} className="p-3 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-success" />
+          {attempts.map((attempt, i) => (
+            <Card key={attempt.id} className="p-3 flex items-center gap-3 reveal" style={{ transitionDelay: `${i * 30}ms` }}>
+              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center icon-glass">
+                <Trophy className="w-5 h-5 text-success icon-glow-purple" />
               </div>
               <div className="flex-1">
                 <h4 className="font-medium text-sm">{(attempt as any).quizzes?.title || "Quiz"}</h4>

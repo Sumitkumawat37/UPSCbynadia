@@ -36,9 +36,9 @@ const AdminAnnouncements = () => {
   };
 
   return (
-    <div className="space-y-4 animate-slide-up">
-      <h2 className="text-xl font-bold">Notifications</h2>
-      <Card className="p-4 space-y-3">
+    <div className="space-y-6 animate-slide-up">
+      <h2 className="text-xl font-bold">Announcements</h2>
+      <Card className="p-4 bg-card border border-border shadow-sm space-y-3">
         <h3 className="font-semibold text-sm flex items-center gap-2">
           <Megaphone className="w-4 h-4 text-primary" /> Send to all students
         </h3>
@@ -62,23 +62,19 @@ const AdminAnnouncements = () => {
         {announcements.map((a) => {
           const Icon = iconMap[a.type] || Info;
           return (
-            <Card key={a.id} className="p-3 flex items-start gap-3">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${a.type === "info" ? "bg-info/10" : a.type === "success" ? "bg-success/10" : "bg-warning/10"}`}>
-                <Icon className={`w-4 h-4 ${a.type === "info" ? "text-info" : a.type === "success" ? "text-success" : "text-warning"}`} />
+            <Card key={a.id} className="p-4 bg-card border border-border shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon className="w-4 h-4 text-primary" />
+                    <h4 className="font-semibold text-sm">{a.title}</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{a.message}</p>
+                </div>
+                <Button size="sm" variant="ghost" className="text-destructive shrink-0" onClick={() => deleteAnnouncement.mutate(a.id)}>
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
               </div>
-              <div className="min-w-0 flex-1">
-                <h4 className="font-semibold text-sm">{a.title}</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">{a.message}</p>
-                <p className="text-[10px] text-muted-foreground/60 mt-1">{new Date(a.created_at).toLocaleString()}</p>
-              </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-destructive shrink-0"
-                onClick={() => deleteAnnouncement.mutate(a.id)}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </Button>
             </Card>
           );
         })}

@@ -8,14 +8,17 @@ import { useCourses, useLectures, useNotes, useChapters } from "@/lib/supabase-d
 import { useCreateCourse, useDeleteCourse, useCreateChapter, useDeleteChapter, useCreateLecture, useDeleteLecture, useUpdateLecture, useCreateNote, useDeleteNote } from "@/lib/supabase-mutations";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Video, FileText, Plus, Upload, BookOpen, Eye, Trash2, FolderPlus, ImagePlus } from "lucide-react";
+import { Video, FileText, Plus, Upload, BookOpen, Eye, Trash2, FolderPlus, ImagePlus, HardDrive, X } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
+import { useGoogleAuth } from "@/lib/google-oauth-context";
 
 const AdminContent = () => {
+  const { isSignedIn, signIn, listDriveFiles } = useGoogleAuth();
+  
   // Course form
   const [showCourseForm, setShowCourseForm] = useState(false);
   const [courseTitle, setCourseTitle] = useState("");
@@ -60,6 +63,9 @@ const AdminContent = () => {
   const [noteFileUrl, setNoteFileUrl] = useState("");
   const [noteCourseId, setNoteCourseId] = useState("");
   const [noteChapterId, setNoteChapterId] = useState("");
+  const [loadingDrive, setLoadingDrive] = useState(false);
+  const [showDrivePicker, setShowDrivePicker] = useState(false);
+  const [driveFiles, setDriveFiles] = useState<any[]>([]);
 
   const { data: courses = [] } = useCourses();
   const { data: lectures = [] } = useLectures();
@@ -210,6 +216,35 @@ const AdminContent = () => {
         setNoteTitle(""); setNoteDesc(""); setNotePages(""); setNoteFileUrl("");
       },
     });
+  };
+
+  const pickFromDrive = async () => {
+    if (!isSignedIn) {
+      try {
+        await signIn();
+      } catch (error) {
+        toast.error("Failed to sign in to Google");
+        return;
+      }
+    }
+    
+    setLoadingDrive(true);
+    try {
+      const files = await listDriveFiles();
+      setDriveFiles(files);
+      setShowDrivePicker(true);
+      setLoadingDrive(false);
+    } catch (error: any) {
+      console.error('Error picking from Drive:', error);
+      toast.error("Failed to load Drive files: " + (error.message || "Unknown error"));
+      setLoadingDrive(false);
+    }
+  };
+
+  const selectDriveFile = (file: any) => {
+    setNoteFileUrl(file.webViewLink);
+    setShowDrivePicker(false);
+    toast.success(`Selected: ${file.name}`);
   };
 
   return (
@@ -483,12 +518,66 @@ const AdminContent = () => {
                   <div className="space-y-1"><Label className="text-xs">Pages</Label><Input type="number" placeholder="10" value={notePages} onChange={(e) => setNotePages(e.target.value)} /></div>
                   <div className="space-y-1"><Label className="text-xs">File URL</Label><Input placeholder="https://..." value={noteFileUrl} onChange={(e) => setNoteFileUrl(e.target.value)} /></div>
                 </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 text-xs" 
+                    onClick={pickFromDrive}
+                    disabled={loadingDrive}
+                  >
+                    {loadingDrive ? "Loading..." : <><Upload className="w-3 h-3 mr-1" /> Pick from Drive</>}
+                  </Button>
+                </div>
                 <Button className="w-full" onClick={handleCreateNote} disabled={createNote.isPending}>
                   {createNote.isPending ? "Uploading..." : "Upload Notes"}
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
+          
+          {/* Drive File Picker Dialog */}
+          <Dialog open={showDrivePicker} onOpenChange={setShowDrivePicker}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Select from Google Drive</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                {loadingDrive ? (
+                  <div className="text-center py-8">
+                    <HardDrive className="w-8 h-8 mx-auto animate-spin text-purple-400" />
+                    <p className="text-gray-400 mt-2">Loading files...</p>
+                  </div>
+                ) : driveFiles.length === 0 ? (
+                  <div className="text-center py-8">
+                    <HardDrive className="w-12 h-12 mx-auto text-gray-600 mb-2" />
+                    <p className="text-gray-400">No files found in Drive</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {driveFiles.map((file) => (
+                      <div
+                        key={file.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-purple-500/50 cursor-pointer transition-all"
+                        onClick={() => selectDriveFile(file)}
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+                          <FileText className="w-5 h-5 text-purple-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{file.name}</p>
+                          <p className="text-xs text-muted-foreground">{file.mimeType}</p>
+                        </div>
+                        <Button size="sm" variant="ghost">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+          
           {notes.map((n) => (
             <Card key={n.id} className="p-3 flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0"><FileText className="w-4 h-4 text-destructive" /></div>

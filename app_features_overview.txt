@@ -1,0 +1,76 @@
+================================================================================
+                     UPSC BY NADIYA MA'AM — PLATFORM OVERVIEW
+================================================================================
+
+1. ARCHITECTURE & TECH STACK
+--------------------------------------------------------------------------------
+- Frontend: React.js, Vite, Tailwind CSS, Lucide Icons, Recharts, Shadcn/ui (Radix)
+- Backend: Node.js, Express, TypeScript, tsx, Nodemailer, Gmail SMTP
+- Database: Supabase (PostgreSQL), Custom Triggers, RLS (Row-Level Security) policies
+- Authentication: Supabase Auth (Email / Password)
+
+2. SYSTEM ROLES
+--------------------------------------------------------------------------------
+- STUDENT:
+  Can view courses, watch lectures, play interactive quizzes, review attempt history, 
+  receive automatic quiz results emails, ask questions/doubts, and read announcements.
+  
+- ADMIN (TEACHER):
+  Access to the Teacher Dashboard. Can manage student profiles, create courses, upload 
+  lectures, build and configure quizzes, publish system-wide announcements, review 
+  student doubts (with thread replying), and access the comprehensive Email Center.
+
+- SUPER ADMIN:
+  All teacher features plus complete platform control, user privilege modification, 
+  and role assignment.
+
+3. PROFILE PROPERTIES (USER OBJECT SCHEMA)
+--------------------------------------------------------------------------------
+Each user profile has the following properties stored and linked across Supabase:
+- `id` (UUID): Unique primary key.
+- `user_id` (UUID): References `auth.users(id)`.
+- `name` (TEXT): Full name of the user.
+- `email` (TEXT): User's registration and communication email address.
+- `created_at` (TIMESTAMPTZ): Date & time of registration.
+- `role` (TEXT / ENUM): Stored inside `user_roles` linking `user_id` -> role ('student' | 'admin' | 'super_admin').
+- `status` (TEXT): Virtual/computed property ('Active' | 'Inactive') representing engagement.
+
+4. CORE CORE FEATURES
+--------------------------------------------------------------------------------
+A. COURSE & LECTURE MANAGEMENT
+   - Structured curriculum with courses, chapters, and lectures.
+   - Beautiful course preview cards, purchase workflows, and content player.
+   - Inline video playback supporting YouTube playlist sync.
+
+B. INTERACTIVE QUIZ ENGINE
+   - Quizzes are associated with courses and chapters.
+   - Dynamic Quiz playing interface with immediate visual indicators (Correct/Wrong/Skipped).
+   - Track progress indicators and score summary screens.
+   - Automatic integration with Backend Email Center to fire instant quiz results.
+
+C. THE EMAIL CENTER (TEACHER DASHBOARD)
+   - Compose & Send: Custom rich text style creator with templates.
+   - Dynamic Placeholders: Add placeholders like `{{name}}`, `{{score}}`, `{{courseName}}` to automatically personalize emails.
+   - Multiple Target Categories: Filter and send to single, multiple, or full student cohorts.
+   - Category Classification: Set category badges (Assignment, Quiz Notification, Quiz Results, Live Class, General Announcement).
+   - Drafts Engine: Save compositions halfway, edit, or delete them later.
+   - Scheduling Engine: Select custom `datetime` schedules. A background scheduler checks every 60 seconds to process and send scheduled emails automatically.
+   - Sent Logs & History: Complete history feed with paginated sent logs.
+   - Interactive Analytics Panel: Total sent, total recipients, status breakdown, 7-day volume charts, and categorical allocation metrics.
+
+D. DOUBTS & COMMUNITY RESOLUTION
+   - Students can create doubts on specific lectures.
+   - Teachers receive real-time dashboard alerts.
+   - Direct thread replies with status updating.
+
+E. LIVE CLASS ALERTS & ANNOUNCEMENTS
+   - Teachers can schedule Live Classes and post Announcements.
+   - Email notifications can be automatically or manually triggered to notify students.
+
+5. SECURITY & OPTIMIZATION
+--------------------------------------------------------------------------------
+- Row Level Security (RLS): Restricts profile access and database insertions.
+- Automated Verification: Registration immediately triggers a customizable verification link over Gmail SMTP.
+- Input Validation: Sanitized queries with robust error handling on the backend.
+- Node Process Schedulers: Lightweight cron replacements executing processes within memory limits safely.
+================================================================================

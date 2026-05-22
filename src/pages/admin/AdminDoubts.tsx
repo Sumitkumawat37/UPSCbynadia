@@ -27,7 +27,7 @@ const AdminDoubts = () => {
   const answered = doubts.filter((d) => d.reply);
 
   return (
-    <div className="space-y-4 animate-slide-up">
+    <div className="space-y-6 animate-slide-up">
       <h2 className="text-xl font-bold">Student Doubts</h2>
       <p className="text-muted-foreground text-sm">{pending.length} pending · {answered.length} answered</p>
       {pending.length > 0 && (
@@ -35,7 +35,7 @@ const AdminDoubts = () => {
           <h3 className="font-bold text-sm mb-2 text-warning uppercase tracking-wide">Pending</h3>
           <div className="space-y-3">
             {pending.map((d) => (
-              <Card key={d.id} className="p-4 border-warning/30">
+              <Card key={d.id} className="p-4 bg-card border border-border shadow-sm">
                 <div className="flex items-start gap-2 mb-2">
                   <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
                     {d.student_name.split(" ").map((n: string) => n[0]).join("")}
@@ -64,7 +64,7 @@ const AdminDoubts = () => {
           <h3 className="font-bold text-sm mb-2 text-success uppercase tracking-wide">Answered</h3>
           <div className="space-y-2">
             {answered.map((d) => (
-              <Card key={d.id} className="p-4">
+              <Card key={d.id} className="p-4 bg-card border border-border shadow-sm opacity-70">
                 <div className="flex items-start gap-2 mb-2">
                   <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
                     {d.student_name.split(" ").map((n: string) => n[0]).join("")}

@@ -61,9 +61,9 @@ const AdminLiveClasses = () => {
   };
 
   return (
-    <div className="space-y-4 animate-slide-up">
+    <div className="space-y-6 animate-slide-up">
       <h2 className="text-xl font-bold">Live Classes</h2>
-      <Card className="p-4 space-y-3">
+      <Card className="p-4 bg-card border border-border shadow-sm space-y-3">
         <h3 className="font-semibold text-sm flex items-center gap-2"><Calendar className="w-4 h-4 text-primary" /> Schedule New Class</h3>
         <Input placeholder="Class title" value={title} onChange={(e) => setTitle(e.target.value)} />
         <Select value={selectedCourse} onValueChange={(v) => { setSelectedCourse(v); setSelectedChapter(""); }}>
@@ -96,7 +96,7 @@ const AdminLiveClasses = () => {
       </Card>
       <div className="space-y-3">
         {liveClasses.map((cls) => (
-          <Card key={cls.id} className="p-4">
+          <Card key={cls.id} className="p-4 bg-card border border-border shadow-sm">
             <div className="flex items-start gap-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${cls.status === "completed" ? "bg-success/10" : "bg-primary/10"}`}>
                 <Video className={`w-5 h-5 ${cls.status === "completed" ? "text-success" : "text-primary"}`} />

@@ -9,6 +9,7 @@ import { LiveMeetingFrame } from "@/components/LiveMeetingFrame";
 import { LiveChat } from "@/components/LiveChat";
 import { useMarkAttendance } from "@/lib/supabase-mutations";
 import { useAuth } from "@/lib/auth-context";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const LiveClassesPage = () => {
   const { data: liveClasses = [] } = useLiveClasses();
@@ -42,19 +43,21 @@ const LiveClassesPage = () => {
     return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
   };
 
+  const scrollRef = useScrollReveal();
+
   return (
-    <div className="space-y-5 animate-slide-up">
-      <h2 className="text-xl font-bold">Live Classes</h2>
+    <div className="space-y-5 animate-slide-up" ref={scrollRef}>
+      <h2 className="text-xl font-bold animate-text-glow">Live Classes</h2>
 
       {upcoming.length > 0 && (
         <div>
           <h3 className="font-bold text-sm mb-2 text-muted-foreground uppercase tracking-wide">Upcoming</h3>
           <div className="space-y-3">
             {upcoming.map((cls) => (
-              <Card key={cls.id} className="p-4">
+              <Card key={cls.id} className="p-4 reveal spotlight-card" style={{ transitionDelay: `${upcoming.indexOf(cls) * 40}ms` }}>
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Video className="w-5 h-5 text-primary" />
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 icon-glass">
+                    <Video className="w-5 h-5 text-primary icon-glow-purple" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-sm">{cls.title}</h4>
@@ -62,11 +65,11 @@ const LiveClassesPage = () => {
                       {(cls as any).courses?.title} · {(cls as any).chapters?.title}
                     </p>
                     <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatDate(cls.scheduled_at)}</span>
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatTime(cls.scheduled_at)}</span>
+                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3 icon-glow-purple" /> {formatDate(cls.scheduled_at)}</span>
+                      <span className="flex items-center gap-1"><Clock className="w-3 h-3 icon-glow-purple" /> {formatTime(cls.scheduled_at)}</span>
                     </div>
                     <Button size="sm" className="mt-3 w-full" onClick={() => handleJoin(cls)}>
-                      <ExternalLink className="w-3 h-3 mr-1" /> Join Live Class
+                      <ExternalLink className="w-3 h-3 mr-1 icon-glow-purple" /> Join Live Class
                     </Button>
                   </div>
                   <Badge className="bg-primary/10 text-primary border-0 shrink-0">Live</Badge>
@@ -82,9 +85,9 @@ const LiveClassesPage = () => {
           <h3 className="font-bold text-sm mb-2 text-muted-foreground uppercase tracking-wide">Past Classes</h3>
           <div className="space-y-2">
             {completed.map((cls) => (
-              <Card key={cls.id} className="p-3 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
-                  <CheckCircle className="w-4 h-4 text-success" />
+              <Card key={cls.id} className="p-3 flex items-center gap-3 reveal" style={{ transitionDelay: `${completed.indexOf(cls) * 30}ms` }}>
+                <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center shrink-0 icon-glass">
+                  <CheckCircle className="w-4 h-4 text-success icon-glow-purple" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-sm truncate">{cls.title}</h4>

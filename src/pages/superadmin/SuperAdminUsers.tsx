@@ -111,17 +111,17 @@ const SuperAdminUsers = () => {
 
   const roleBadge = (role: string) => {
     if (role === "super_admin") return (
-      <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-200">
+      <span className="inline-flex items-center gap-1 bg-amber-500/15 text-amber-400 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-500/20">
         <Crown className="w-2.5 h-2.5" /> Admin
       </span>
     );
     if (role === "admin") return (
-      <span className="inline-flex items-center gap-1 bg-violet-100 text-violet-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-violet-200">
+      <span className="inline-flex items-center gap-1 bg-violet-500/15 text-violet-400 text-[9px] font-bold px-2 py-0.5 rounded-full border border-violet-500/20">
         <ShieldCheck className="w-2.5 h-2.5" /> Teacher
       </span>
     );
     return (
-      <span className="inline-flex items-center gap-1 bg-sky-100 text-sky-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-sky-200">
+      <span className="inline-flex items-center gap-1 bg-purple-500/15 text-purple-400 text-[9px] font-bold px-2 py-0.5 rounded-full border border-purple-500/20">
         <GraduationCap className="w-2.5 h-2.5" /> Student
       </span>
     );
@@ -131,11 +131,11 @@ const SuperAdminUsers = () => {
     <div className="space-y-5 animate-slide-up">
 
       {/* Header */}
-      <div className="relative overflow-hidden rounded-3xl gradient-hero p-5 shadow-lg">
-        <div className="absolute -top-6 -right-6 w-28 h-28 bg-white/10 rounded-full animate-float" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-900/80 via-[#1a1040] to-pink-900/40 p-5 shadow-lg neon-border">
+        <div className="absolute -top-6 -right-6 w-28 h-28 bg-purple-600/15 rounded-full blur-2xl animate-float" />
         <div className="relative z-10 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center border border-white/30 shadow-sm">
+            <div className="w-11 h-11 rounded-2xl bg-purple-500/20 flex items-center justify-center border border-purple-400/30 shadow-sm">
               <Users className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -145,7 +145,7 @@ const SuperAdminUsers = () => {
           </div>
           <Dialog open={showAdd} onOpenChange={setShowAdd}>
             <DialogTrigger asChild>
-              <button className="flex items-center gap-1.5 bg-white text-sky-600 text-xs font-bold px-3 py-2 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95">
+              <button className="flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg shadow-purple-500/30 hover:shadow-xl transition-all active:scale-95">
                 <Plus className="w-3.5 h-3.5" /> Add User
               </button>
             </DialogTrigger>
@@ -171,15 +171,15 @@ const SuperAdminUsers = () => {
                       <button
                         key={r}
                         onClick={() => setNewRole(r)}
-                        className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all border ${newRole === r ? "gradient-hero text-white border-transparent shadow-md" : "text-slate-500 border-slate-200 hover:border-sky-300"}`}
+                        className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all border ${newRole === r ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-transparent shadow-lg shadow-purple-500/25" : "text-gray-400 border-purple-500/15 hover:border-purple-500/30"}`}
                       >
                         {r === "admin" ? "Teacher" : "Student"}
                       </button>
                     ))}
                   </div>
                 </div>
-                <div className="bg-amber-50 rounded-xl p-3 border border-amber-100">
-                  <p className="text-[10px] text-amber-700 font-semibold">Note: If email confirmation is enabled in your Supabase project, the user must verify their email before logging in.</p>
+                <div className="bg-amber-500/10 rounded-xl p-3 border border-amber-500/15">
+                  <p className="text-[10px] text-amber-400 font-semibold">Note: If email confirmation is enabled in your Supabase project, the user must verify their email before logging in.</p>
                 </div>
                 <Button className="w-full" onClick={handleAddUser} disabled={adding}>
                   {adding ? "Creating..." : "Create Account"}
@@ -199,9 +199,9 @@ const SuperAdminUsers = () => {
         ].map((s) => {
           const Icon = s.icon;
           return (
-            <div key={s.label} className="bg-white rounded-2xl p-3 text-center shadow-sm border border-slate-50">
+            <div key={s.label} className="glass-card rounded-2xl p-3 text-center neon-border">
               <p className={`text-xl font-extrabold bg-gradient-to-br ${s.color} bg-clip-text text-transparent`}>{s.value}</p>
-              <p className="text-[9px] text-slate-400 font-semibold mt-0.5">{s.label}</p>
+              <p className="text-[9px] text-gray-500 font-semibold mt-0.5">{s.label}</p>
             </div>
           );
         })}
@@ -209,12 +209,12 @@ const SuperAdminUsers = () => {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
         <Input
           placeholder="Search by name or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-10 rounded-2xl border-sky-100 bg-sky-50/50 input-glow"
+          className="pl-10 rounded-2xl border-purple-500/15 bg-white/5 text-white input-glow"
         />
       </div>
 
@@ -226,9 +226,9 @@ const SuperAdminUsers = () => {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-3xl p-8 text-center shadow-sm border border-slate-50">
-          <Users className="w-10 h-10 text-slate-200 mx-auto mb-2" />
-          <p className="text-slate-400 text-sm">No users found</p>
+        <div className="glass-card rounded-3xl p-8 text-center neon-border">
+          <Users className="w-10 h-10 text-gray-600 mx-auto mb-2" />
+          <p className="text-gray-400 text-sm">No users found</p>
         </div>
       ) : (
         <div className="space-y-2.5">
@@ -239,18 +239,18 @@ const SuperAdminUsers = () => {
             return (
               <div
                 key={p.id}
-                className="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-50 flex items-center gap-3 animate-slide-up"
+                className="glass-card rounded-2xl p-3.5 flex items-center gap-3 animate-slide-up neon-border"
                 style={{ animationDelay: `${i * 40}ms` }}
               >
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white text-xs font-extrabold shadow-sm shrink-0 ${isSA ? "bg-gradient-to-br from-amber-400 to-orange-500" : role === "admin" ? "bg-gradient-to-br from-violet-400 to-purple-500" : "gradient-hero"}`}>
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-white text-xs font-extrabold shadow-sm shrink-0 ${isSA ? "bg-gradient-to-br from-amber-400 to-orange-500" : role === "admin" ? "bg-gradient-to-br from-violet-400 to-purple-500" : "bg-gradient-to-br from-purple-500 to-pink-500"}`}>
                   {initials}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-bold text-slate-800 truncate">{p.name}</p>
+                    <p className="text-sm font-bold text-white truncate">{p.name}</p>
                     {roleBadge(role)}
                   </div>
-                  <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                  <p className="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
                     <Mail className="w-2.5 h-2.5 shrink-0" />
                     <span className="truncate">{p.email}</span>
                   </p>
@@ -260,7 +260,7 @@ const SuperAdminUsers = () => {
                     <button
                       onClick={() => handleRoleToggle(p.user_id, role)}
                       disabled={setUserRole.isPending}
-                      className={`text-[10px] font-bold px-2.5 py-1.5 rounded-xl transition-all active:scale-95 ${role === "admin" ? "bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-100" : "bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-100"}`}
+                      className={`text-[10px] font-bold px-2.5 py-1.5 rounded-xl transition-all active:scale-95 ${role === "admin" ? "bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/15" : "bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 border border-violet-500/15"}`}
                     >
                       {role === "admin" ? "Make Student" : "Make Teacher"}
                     </button>
@@ -268,13 +268,13 @@ const SuperAdminUsers = () => {
                   {!isSA && (
                     <button
                       onClick={() => handleDelete(p.user_id, p.name ?? "user")}
-                      className="w-8 h-8 rounded-xl bg-red-50 text-red-400 hover:bg-red-100 flex items-center justify-center transition-all active:scale-95 border border-red-100"
+                      className="w-8 h-8 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center transition-all active:scale-95 border border-red-500/15"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
                   {isSA && (
-                    <span className="text-[9px] text-amber-500 font-bold px-2 py-1">Admin</span>
+                    <span className="text-[9px] text-amber-400 font-bold px-2 py-1">Admin</span>
                   )}
                 </div>
               </div>

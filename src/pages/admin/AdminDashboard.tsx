@@ -1,6 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { useCourses, useLectures, useQuizzes, useAnnouncements, useDoubts, useProfiles } from "@/lib/supabase-data";
-import { Users, BookOpen, Trophy, Megaphone, TrendingUp, Video, MessageCircle, ShoppingCart, Calendar, Clock, UserCheck, BarChart3, Activity } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { Users, BookOpen, Trophy, Megaphone, TrendingUp, Video, MessageCircle, ShoppingCart, Calendar, Clock, UserCheck, BarChart3, Activity, Mail, Phone, MapPin, Award, Edit } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useNavigate } from "react-router-dom";
 
@@ -11,17 +14,34 @@ const studentActivityData = [
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { user, role } = useAuth();
   const { data: courses = [] } = useCourses();
   const { data: lectures = [] } = useLectures();
   const { data: quizzes = [] } = useQuizzes();
   const { data: announcements = [] } = useAnnouncements();
   const { data: doubts = [] } = useDoubts();
   const { data: profiles = [] } = useProfiles();
+  const [studentProfiles, setStudentProfiles] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchStudentProfiles = async () => {
+      const { data: userRoles } = await supabase.from("user_roles").select("user_id, role");
+      const adminUserIds = userRoles
+        ?.filter((r: any) => r.role === "admin" || r.role === "super_admin")
+        .map((r: any) => r.user_id) || [];
+      const students = profiles.filter((p: any) => !adminUserIds.includes(p.user_id));
+      setStudentProfiles(students);
+    };
+    if (profiles.length > 0) {
+      fetchStudentProfiles();
+    }
+  }, [profiles]);
 
   const pendingDoubts = doubts.filter((d) => !d.reply).length;
+  const isSuperAdmin = role === "super_admin";
 
   const stats = [
-    { icon: Users, label: "Students", value: profiles.length, color: "gradient-primary", subtext: "Total enrolled", to: "/admin/students" },
+    { icon: Users, label: "Students", value: studentProfiles.length, color: "gradient-primary", subtext: "Total enrolled", to: "/admin/students" },
     { icon: BookOpen, label: "Courses", value: courses.length, color: "gradient-info", subtext: "Available", to: "/admin/content" },
     { icon: Trophy, label: "Quizzes", value: quizzes.length, color: "gradient-warning", subtext: "Created", to: "/admin/quizzes" },
     { icon: Video, label: "Lectures", value: lectures.length, color: "gradient-success", subtext: "Published", to: "/admin/content" },
@@ -32,33 +52,85 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6 animate-slide-up">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-2xl p-6 border border-primary/20">
+      <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground mb-1">Teacher Dashboard</h1>
             <p className="text-muted-foreground">Manage your courses and track student progress</p>
           </div>
           <div className="hidden sm:block">
-            <BarChart3 className="w-12 h-12 text-primary animate-bounce-subtle" />
+            <BarChart3 className="w-12 h-12 text-primary" />
           </div>
         </div>
       </div>
+
+      {/* Profile Section - Visible to Teachers and Super Admin */}
+      <Card className="p-6 bg-card border border-border shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-6">
+          <div className="flex-shrink-0">
+            <div className="w-32 h-32 rounded-2xl overflow-hidden border-4 border-primary/30 shadow-lg shadow-primary/20 mx-auto sm:mx-0">
+              <img src="/shivam-sir.jpg" alt="Shivam Sir" className="w-full h-full object-cover" />
+            </div>
+          </div>
+          <div className="flex-1 space-y-3">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  Shivam Sir
+                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/20 text-primary">Faculty</span>
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">UPSC Expert & Course Instructor</p>
+              </div>
+              <button className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                <Edit className="w-4 h-4 text-primary" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Mail className="w-4 h-4 text-primary icon-glow-purple" />
+                <span className="truncate">shivam@upscbynadia.com</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Phone className="w-4 h-4 text-primary icon-glow-purple" />
+                <span>+91 98765 43210</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="w-4 h-4 text-primary icon-glow-purple" />
+                <span>New Delhi, India</span>
+              </div>
+            </div>
+            <div className="flex gap-4 pt-2">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary">{courses.length}</p>
+                <p className="text-xs text-muted-foreground">Courses</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary">{studentProfiles.length}</p>
+                <p className="text-xs text-muted-foreground">Students</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary">{lectures.length}</p>
+                <p className="text-xs text-muted-foreground">Lectures</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((stat, index) => (
           <Card 
             key={stat.label} 
-            className="p-5 hover-lift cursor-pointer border-0 shadow-lg animate-scale-in" 
-            style={{ animationDelay: `${index * 100}ms` }}
+            className="p-5 bg-card border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
             onClick={() => navigate(stat.to)}
           >
             <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center mb-3`}>
               <stat.icon className="w-6 h-6 text-white" />
             </div>
             <p className="text-2xl font-bold text-foreground mb-1">{stat.value}</p>
-            <p className="text-sm font-medium text-foreground mb-1">{stat.label}</p>
-            <p className="text-xs text-muted-foreground">{stat.subtext}</p>
+            <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+            <p className="text-xs text-muted-foreground mt-1">{stat.subtext}</p>
           </Card>
         ))}
       </div>
@@ -66,7 +138,7 @@ const AdminDashboard = () => {
       {/* Charts and Activity */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Student Activity Chart */}
-        <Card className="p-6 border-0 shadow-lg">
+        <Card className="p-6 bg-card border border-border shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" />
@@ -76,7 +148,7 @@ const AdminDashboard = () => {
           </div>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={studentActivityData}>
-              <XAxis dataKey="day" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#6b7280' }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip 
                 contentStyle={{ 
@@ -91,7 +163,7 @@ const AdminDashboard = () => {
         </Card>
 
         {/* Quick Actions */}
-        <Card className="p-6 border-0 shadow-lg">
+        <Card className="p-6 bg-card border border-border shadow-sm">
           <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
             Quick Actions
@@ -99,7 +171,7 @@ const AdminDashboard = () => {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => navigate("/admin/access")}
-              className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20 hover-lift transition-all duration-200 text-left"
+              className="p-4 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all duration-200 text-left"
             >
               <ShoppingCart className="w-6 h-6 text-primary mb-2" />
               <p className="text-sm font-medium text-foreground">Course Access</p>
@@ -107,9 +179,9 @@ const AdminDashboard = () => {
             </button>
             <button
               onClick={() => navigate("/admin/live")}
-              className="p-4 bg-gradient-to-br from-success/10 to-success/5 rounded-xl border border-success/20 hover-lift transition-all duration-200 text-left"
+              className="p-4 bg-muted/50 rounded-xl border border-border hover:bg-muted transition-all duration-200 text-left"
             >
-              <Video className="w-6 h-6 text-success mb-2" />
+              <Video className="w-6 h-6 text-primary mb-2" />
               <p className="text-sm font-medium text-foreground">Live Classes</p>
               <p className="text-xs text-muted-foreground mt-1">Schedule sessions</p>
             </button>
@@ -118,7 +190,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Recent Students */}
-      <Card className="p-6 border-0 shadow-lg">
+      <Card className="p-6 bg-card border border-border shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <UserCheck className="w-5 h-5 text-primary" />
@@ -132,8 +204,8 @@ const AdminDashboard = () => {
           </button>
         </div>
         <div className="space-y-3">
-          {profiles.slice(0, 4).map((student, index) => (
-            <div key={student.id} className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors animate-scale-in" style={{ animationDelay: `${(index + 6) * 100}ms` }}>
+          {studentProfiles.slice(0, 4).map((student, index) => (
+            <div key={student.id} className="flex items-center gap-4 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-bold text-primary">
                 {student.name?.split(" ").map((n: string) => n[0]).join("") || "?"}
               </div>
@@ -142,12 +214,12 @@ const AdminDashboard = () => {
                 <p className="text-xs text-muted-foreground truncate">{student.email}</p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-success animate-pulse"></div>
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
                 <span className="text-xs text-muted-foreground">Active</span>
               </div>
             </div>
           ))}
-          {profiles.length === 0 && (
+          {studentProfiles.length === 0 && (
             <div className="text-center py-8">
               <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-muted-foreground" />

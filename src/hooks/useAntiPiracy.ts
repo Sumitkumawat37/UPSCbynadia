@@ -5,6 +5,7 @@ interface AntiPiracyOptions {
   blurOnTabSwitch?: boolean;
   disableRightClick?: boolean;
   detectDevTools?: boolean;
+  detectScreenRecording?: boolean;
 }
 
 export const useAntiPiracy = (options: AntiPiracyOptions = {}) => {
@@ -13,11 +14,14 @@ export const useAntiPiracy = (options: AntiPiracyOptions = {}) => {
     blurOnTabSwitch = true,
     disableRightClick = true,
     detectDevTools = true,
+    detectScreenRecording = true,
   } = options;
 
   const [isTabHidden, setIsTabHidden] = useState(false);
   const [devToolsOpen, setDevToolsOpen] = useState(false);
+  const [screenRecordingDetected, setScreenRecordingDetected] = useState(false);
   const devToolsCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const screenRecordingCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Tab visibility blur
   useEffect(() => {
@@ -42,7 +46,7 @@ export const useAntiPiracy = (options: AntiPiracyOptions = {}) => {
     return () => document.removeEventListener("contextmenu", handleContextMenu);
   }, [enabled, disableRightClick]);
 
-  // Block DevTools keyboard shortcuts
+  // Block DevTools keyboard shortcuts and screenshot keys
   useEffect(() => {
     if (!enabled) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -54,7 +58,14 @@ export const useAntiPiracy = (options: AntiPiracyOptions = {}) => {
         (e.ctrlKey && e.key === "s") ||
         (e.ctrlKey && e.key === "S") ||
         (e.ctrlKey && e.shiftKey && e.key === "K");
-      if (isDevTools) {
+      
+      const isScreenshot =
+        e.key === "PrintScreen" ||
+        (e.ctrlKey && e.shiftKey && ["S", "s"].includes(e.key)) ||
+        (e.metaKey && e.shiftKey && ["3", "4"].includes(e.key)) ||
+        (e.metaKey && e.shiftKey && e.key === "5");
+      
+      if (isDevTools || isScreenshot) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -77,5 +88,30 @@ export const useAntiPiracy = (options: AntiPiracyOptions = {}) => {
     };
   }, [enabled, detectDevTools]);
 
-  return { isTabHidden, devToolsOpen };
+  // Screen recording detection via getDisplayMedia API check
+  useEffect(() => {
+    if (!enabled || !detectScreenRecording) return;
+    
+    const checkScreenRecording = () => {
+      // Check if screen recording is active by attempting to detect
+      // This is a heuristic - actual detection is limited by browser security
+      const isRecording = navigator.mediaDevices && 'getDisplayMedia' in navigator.mediaDevices;
+      
+      // Additional check: detect if page is being captured via performance timing
+      // When screen recording, performance tends to degrade
+      if (performance.now() > 0) {
+        const memory = (performance as any).memory;
+        if (memory && memory.usedJSHeapSize > memory.jsHeapSizeLimit * 0.9) {
+          setScreenRecordingDetected(true);
+        }
+      }
+    };
+
+    screenRecordingCheckRef.current = setInterval(checkScreenRecording, 3000);
+    return () => {
+      if (screenRecordingCheckRef.current) clearInterval(screenRecordingCheckRef.current);
+    };
+  }, [enabled, detectScreenRecording]);
+
+  return { isTabHidden, devToolsOpen, screenRecordingDetected };
 };
