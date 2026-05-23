@@ -54,19 +54,19 @@ const SignupPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a1a] flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#050505] flex flex-col md:flex-row">
 
       {/* LEFT: branding */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-purple-900/80 via-[#1a1040] to-pink-900/40 pt-12 pb-20 px-6 flex flex-col items-center md:w-1/2 md:min-h-screen md:pt-0 md:pb-0 md:items-start md:justify-center md:px-14 aurora-bg">
-        <div className="absolute -top-10 -left-10 w-44 h-44 bg-purple-600/20 rounded-full blur-3xl animate-blob" />
-        <div className="absolute bottom-0 -right-10 w-36 h-36 bg-pink-600/20 rounded-full blur-3xl animate-blob-2" />
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#A855F7]/80 via-[#1a1040] to-[#EC4899]/40 pt-12 pb-20 px-6 flex flex-col items-center md:w-1/2 md:min-h-screen md:pt-0 md:pb-0 md:items-start md:justify-center md:px-14 aurora-bg">
+        <div className="absolute -top-10 -left-10 w-44 h-44 bg-[#A855F7]/25 rounded-full blur-3xl animate-blob" />
+        <div className="absolute bottom-0 -right-10 w-36 h-36 bg-[#EC4899]/25 rounded-full blur-3xl animate-blob-2" />
         <div className="absolute top-6 right-10 w-5 h-5 bg-purple-400/30 rounded-full animate-float" />
         <div className="absolute bottom-10 left-16 w-3 h-3 bg-pink-400/50 rounded-full animate-float-reverse" />
         <div className="hidden md:block absolute bottom-20 right-10 w-32 h-32 bg-purple-500/5 rounded-full animate-blob" />
 
         <div className="relative z-10 flex flex-col items-center text-center md:items-start md:text-left animate-fade-in">
           <div
-            className="relative w-16 h-16 rounded-3xl bg-gradient-to-br from-purple-500 to-pink-500 border-4 border-purple-400/40 flex items-center justify-center shadow-2xl shadow-purple-500/30 mb-4 animate-float-slow animate-glow-breathe"
+            className="relative w-16 h-16 rounded-3xl bg-gradient-to-br from-[#A855F7] to-[#EC4899] border-4 border-[#A855F7]/40 flex items-center justify-center shadow-[0_0_40px_rgba(168,85,247,0.4)] mb-4 animate-float-slow animate-glow-breathe icon-container-glow"
           >
             <div className="absolute inset-0 rounded-3xl bg-white/10 animate-pulse" style={{ animationDuration: '3s' }} />
             <GraduationCap className="w-8 h-8 text-white relative z-10 icon-glow-purple icon-animated-pulse" />
@@ -74,15 +74,15 @@ const SignupPage = () => {
           <h1 className="text-2xl md:text-4xl font-bold text-white leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
             Join <span className="text-shimmer">UPSC Nadiya</span>
           </h1>
-          <p className="text-white/75 text-sm md:text-base mt-1.5 md:mt-3">Create your free student account</p>
+          <p className="text-[#B3B3B3]/75 text-sm md:text-base mt-1.5 md:mt-3">Create your free student account</p>
 
           <div className="hidden md:flex flex-col gap-3 mt-10">
             {benefits.map((item, i) => (
               <div key={item} className="flex items-center gap-3 animate-slide-in-left" style={{ animationDelay: `${i * 100}ms` }}>
-                <div className="w-5 h-5 rounded-full bg-purple-500/30 border border-purple-400/50 flex items-center justify-center shrink-0 hover-scale">
-                  <span className="text-purple-300 text-[10px] font-bold">&#10003;</span>
+                <div className="w-5 h-5 rounded-full bg-[#A855F7]/30 border border-[#A855F7]/40 flex items-center justify-center shrink-0 hover-scale shadow-[0_0_10px_rgba(168,85,247,0.15)]">
+                  <span className="text-[#C084FC] text-[10px] font-bold">&#10003;</span>
                 </div>
-                <span className="text-white/90 text-sm">{item}</span>
+                <span className="text-[#B3B3B3]/90 text-sm">{item}</span>
               </div>
             ))}
           </div>
@@ -92,9 +92,9 @@ const SignupPage = () => {
       {/* RIGHT: form */}
       <div className="flex-1 flex items-start md:items-center justify-center px-4 pt-0 pb-8 md:py-0 -mt-8 md:mt-0 relative z-10">
         <div className="w-full max-w-sm">
-          <div className="bg-[#12122a]/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-purple-900/30 border border-purple-500/15 p-5 animate-slide-in-bounce">
+          <div className="bg-[#0D0D0D]/90 backdrop-blur-xl rounded-3xl shadow-[0_0_40px_rgba(168,85,247,0.3)] border border-[#A855F7]/30 p-5 animate-slide-in-bounce neon-border">
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 icon-container-glow">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#A855F7] to-[#EC4899] flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] icon-container-glow">
                 <UserPlus className="w-4 h-4 text-white icon-glow-purple" />
               </div>
               <p className="text-sm font-bold text-white">Create Student Account</p>
@@ -102,32 +102,32 @@ const SignupPage = () => {
 
             <form onSubmit={handleSignup} className="space-y-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Full Name</Label>
+                <Label className="text-xs font-semibold text-[#777777] uppercase tracking-wide">Full Name</Label>
                 <Input
                   placeholder="e.g. Priya Singh"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="rounded-2xl border-purple-500/15 bg-white/5 h-12 pl-4 text-white input-glow"
+                  className="rounded-2xl border-[#A855F7]/20 bg-[#050505]/50 h-12 pl-4 text-white input-glow shadow-[0_0_10px_rgba(168,85,247,0.1)]"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Email</Label>
+                <Label className="text-xs font-semibold text-[#777777] uppercase tracking-wide">Email</Label>
                 <Input
                   type="email"
                   placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-2xl border-purple-500/15 bg-white/5 h-12 pl-4 text-white input-glow"
+                  className="rounded-2xl border-[#A855F7]/20 bg-[#050505]/50 h-12 pl-4 text-white input-glow shadow-[0_0_10px_rgba(168,85,247,0.1)]"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Password</Label>
+                <Label className="text-xs font-semibold text-[#777777] uppercase tracking-wide">Password</Label>
                 <Input
                   type="password"
                   placeholder="Min. 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="rounded-2xl border-purple-500/15 bg-white/5 h-12 pl-4 text-white input-glow"
+                  className="rounded-2xl border-[#A855F7]/20 bg-[#050505]/50 h-12 pl-4 text-white input-glow shadow-[0_0_10px_rgba(168,85,247,0.1)]"
                 />
               </div>
 
@@ -146,10 +146,10 @@ const SignupPage = () => {
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-purple-500/20" />
+                  <span className="w-full border-t border-[#A855F7]/20" />
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-2 bg-[#12122a] text-gray-500">Or continue with</span>
+                  <span className="px-2 bg-[#0D0D0D] text-[#777777]">Or continue with</span>
                 </div>
               </div>
 
@@ -170,9 +170,9 @@ const SignupPage = () => {
             </form>
           </div>
 
-          <p className="text-center text-sm text-gray-500 mt-5">
+          <p className="text-center text-sm text-[#777777] mt-5">
             Already have an account?{' '}
-            <Link to="/login" className="text-purple-400 font-bold hover:underline">Sign In</Link>
+            <Link to="/login" className="text-[#A855F7] font-bold hover:underline">Sign In</Link>
           </p>
         </div>
       </div>

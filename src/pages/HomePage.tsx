@@ -48,10 +48,10 @@ const HomePage = () => {
     <div className="space-y-6" ref={scrollRef}>
 
       {/* ══ HERO SECTION ══ */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-900/80 via-[#1a1040] to-pink-900/40 p-6 md:p-8 shadow-2xl shadow-purple-900/30 animate-fade-in neon-border animate-glow-breathe">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#A855F7]/80 via-[#1a1040] to-[#EC4899]/40 p-6 md:p-8 shadow-[0_0_40px_rgba(168,85,247,0.3)] animate-fade-in neon-border animate-glow-breathe">
         {/* Glow blobs */}
-        <div className="absolute -top-16 -right-16 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl animate-blob pointer-events-none" />
-        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-pink-600/20 rounded-full blur-3xl animate-blob-2 pointer-events-none" />
+        <div className="absolute -top-16 -right-16 w-64 h-64 bg-[#A855F7]/25 rounded-full blur-3xl animate-blob pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#EC4899]/25 rounded-full blur-3xl animate-blob-2 pointer-events-none" />
         <div className="absolute top-8 right-32 w-6 h-6 bg-purple-400/40 rounded-full animate-float" style={{ animationDelay: '0.3s' }} />
         <div className="absolute bottom-10 right-16 w-4 h-4 bg-pink-400/50 rounded-full animate-float-reverse" />
         {/* Meteor streaks */}
@@ -61,16 +61,16 @@ const HomePage = () => {
         <div className="flex items-start justify-between relative z-10">
           <div className="flex-1 pr-3">
             {/* Pill tag */}
-            <div className="inline-flex items-center gap-1.5 bg-purple-500/20 backdrop-blur-sm px-3 py-1.5 rounded-full mb-3 animate-slide-in-left border border-purple-400/20">
-              <Sparkles className="w-3.5 h-3.5 text-purple-300 icon-glow-purple icon-animated-pulse" />
-              <span className="text-purple-200 text-[10px] font-bold tracking-wide">India's Most Loved UPSC Platform</span>
+            <div className="inline-flex items-center gap-1.5 bg-[#A855F7]/20 backdrop-blur-sm px-3 py-1.5 rounded-full mb-3 animate-slide-in-left border border-[#A855F7]/30 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+              <Sparkles className="w-3.5 h-3.5 text-[#C084FC] icon-glow-purple icon-animated-pulse" />
+              <span className="text-[#C084FC] text-[10px] font-bold tracking-wide">India's Most Loved UPSC Platform</span>
             </div>
 
             {/* Main headline */}
             <h1 className="text-white font-extrabold text-[22px] md:text-3xl leading-tight mb-2 animate-slide-in-left animate-text-glow" style={{ animationDelay: '0.08s', fontFamily: 'Poppins, sans-serif' }}>
               Chalo Gen Z<br /><span className="text-shimmer">padhte hai!</span>
             </h1>
-            <p className="text-gray-300/80 text-xs md:text-sm mb-4 leading-relaxed animate-slide-in-left max-w-md" style={{ animationDelay: '0.16s' }}>
+            <p className="text-[#B3B3B3]/80 text-xs md:text-sm mb-4 leading-relaxed animate-slide-in-left max-w-md" style={{ animationDelay: '0.16s' }}>
               Smart strategy, real guidance, and UPSC success — all in one platform. Hi {user?.name?.split(' ')[0] || 'Aspirant'}! <span className="animate-wave">🎯</span>
             </p>
 
@@ -84,7 +84,7 @@ const HomePage = () => {
               </button>
               <button
                 onClick={() => navigate('/courses')}
-                className="bg-white/10 backdrop-blur-sm text-white text-xs font-semibold px-5 py-3 rounded-full border border-purple-400/30 hover:bg-white/15 transition-all ripple press"
+                className="bg-[#0D0D0D]/50 backdrop-blur-sm text-white text-xs font-semibold px-5 py-3 rounded-full border border-[#A855F7]/30 hover:bg-[#0D0D0D]/70 hover:border-[#A855F7]/50 transition-all ripple press shadow-[0_0_15px_rgba(168,85,247,0.1)]"
               >
                 Explore Courses
               </button>
@@ -99,27 +99,27 @@ const HomePage = () => {
                   </div>
                 ))}
               </div>
-              <span className="text-gray-400 text-[11px] font-semibold"><AnimatedCounter end={50000} suffix="+" className="text-purple-400 font-bold" /> Aspirants already learning</span>
+              <span className="text-[#777777] text-[11px] font-semibold"><AnimatedCounter end={50000} suffix="+" className="text-[#A855F7] font-bold" /> Aspirants already learning</span>
             </div>
           </div>
 
           {/* Teacher photo + floating doodles */}
           <div className="relative shrink-0 animate-slide-in-right mt-1 hidden sm:block">
-            <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden border-2 border-purple-400/30 shadow-2xl shadow-purple-500/30 animate-float-slow">
+            <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden border-2 border-[#A855F7]/40 shadow-[0_0_30px_rgba(168,85,247,0.3)] animate-float-slow">
               <img src={teacherBanner} alt="Nadiya Ma'am" className="w-full h-full object-cover object-top scale-110" />
             </div>
             {/* Floating doodles */}
-            <div className="absolute -top-1 -left-28 glass-dark rounded-2xl px-3 py-1.5 shadow-lg flex items-center gap-1.5 animate-float" style={{ animationDelay: '0.6s' }}>
-              <Target className="w-3 h-3 text-pink-400 icon-glow-pink" />
-              <span className="text-[10px] font-bold text-gray-300">Discipline</span>
+            <div className="absolute -top-1 -left-28 glass-dark rounded-2xl px-3 py-1.5 shadow-[0_0_20px_rgba(168,85,247,0.2)] flex items-center gap-1.5 animate-float" style={{ animationDelay: '0.6s' }}>
+              <Target className="w-3 h-3 text-[#EC4899] icon-glow-pink" />
+              <span className="text-[10px] font-bold text-[#B3B3B3]">Discipline</span>
             </div>
-            <div className="absolute top-1/2 -left-28 -translate-y-1/2 glass-dark rounded-2xl px-3 py-1.5 shadow-lg flex items-center gap-1.5 animate-float" style={{ animationDelay: '1.1s' }}>
+            <div className="absolute top-1/2 -left-28 -translate-y-1/2 glass-dark rounded-2xl px-3 py-1.5 shadow-[0_0_20px_rgba(168,85,247,0.2)] flex items-center gap-1.5 animate-float" style={{ animationDelay: '1.1s' }}>
               <Flame className="w-3 h-3 text-orange-400 icon-glow-purple icon-animated-pulse" />
-              <span className="text-[10px] font-bold text-gray-300">Consistency</span>
+              <span className="text-[10px] font-bold text-[#B3B3B3]">Consistency</span>
             </div>
-            <div className="absolute -bottom-8 -left-28 glass-dark rounded-2xl px-3 py-1.5 shadow-lg flex items-center gap-1.5 animate-float" style={{ animationDelay: '0.8s' }}>
-              <Rocket className="w-3 h-3 text-purple-400 icon-glow-purple icon-animated-bounce" />
-              <span className="text-[10px] font-bold text-gray-300">Future Officer</span>
+            <div className="absolute -bottom-8 -left-28 glass-dark rounded-2xl px-3 py-1.5 shadow-[0_0_20px_rgba(168,85,247,0.2)] flex items-center gap-1.5 animate-float" style={{ animationDelay: '0.8s' }}>
+              <Rocket className="w-3 h-3 text-[#A855F7] icon-glow-purple icon-animated-bounce" />
+              <span className="text-[10px] font-bold text-[#B3B3B3]">Future Officer</span>
             </div>
           </div>
         </div>
@@ -132,8 +132,8 @@ const HomePage = () => {
             { icon: Clock, label: "24hr Doubt Reply" },
           ].map((b) => (
             <div key={b.label} className="trust-badge flex items-center gap-1.5 px-3 py-2 hover-scale-sm">
-              <b.icon className="w-3 h-3 text-purple-300 shrink-0 icon-glow-purple" />
-              <span className="text-purple-200 text-[9px] font-semibold whitespace-nowrap">{b.label}</span>
+              <b.icon className="w-3 h-3 text-[#C084FC] shrink-0 icon-glow-purple" />
+              <span className="text-[#C084FC] text-[9px] font-semibold whitespace-nowrap">{b.label}</span>
             </div>
           ))}
         </div>
@@ -158,7 +158,7 @@ const HomePage = () => {
             <p className="text-xl font-extrabold text-white relative z-[1]">
               {s.suffix === "/5★" ? <><AnimatedCounter end={s.value} duration={1200} /><span className="text-sm">/5★</span></> : <AnimatedCounter end={s.value} suffix={s.suffix} duration={1500} />}
             </p>
-            <p className="text-[10px] text-gray-400 font-semibold mt-0.5 relative z-[1]">{s.label}</p>
+            <p className="text-[10px] text-[#777777] font-semibold mt-0.5 relative z-[1]">{s.label}</p>
           </div>
         ))}
       </div>
@@ -168,16 +168,16 @@ const HomePage = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Daily Target</h2>
-            <p className="text-gray-500 text-[10px]">Stay consistent, stay ahead</p>
+            <p className="text-[#777777] text-[10px]">Stay consistent, stay ahead</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 bg-orange-500/15 px-3 py-1.5 rounded-full border border-orange-500/20">
               <Flame className="w-3.5 h-3.5 text-orange-400 streak-fire icon-glow-purple icon-animated-pulse" />
               <span className="text-orange-300 text-[11px] font-bold">7 Day Streak <span className="animate-wave">🔥</span></span>
             </div>
-            <div className="flex items-center gap-1 bg-purple-500/15 px-3 py-1.5 rounded-full border border-purple-500/20">
-              <Sparkles className="w-3.5 h-3.5 text-purple-400 icon-glow-purple icon-animated-pulse" />
-              <span className="text-purple-300 text-[11px] font-bold">250 XP</span>
+            <div className="flex items-center gap-1 bg-[#A855F7]/15 px-3 py-1.5 rounded-full border border-[#A855F7]/30 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+              <Sparkles className="w-3.5 h-3.5 text-[#A855F7] icon-glow-purple icon-animated-pulse" />
+              <span className="text-[#C084FC] text-[11px] font-bold">250 XP</span>
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@ const HomePage = () => {
           {/* Circular progress */}
           <div className="relative w-24 h-24 shrink-0">
             <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(168,85,247,0.15)" strokeWidth="8" />
+              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(168,85,247,0.2)" strokeWidth="8" />
               <circle cx="50" cy="50" r="42" fill="none" stroke="url(#progressGradient)" strokeWidth="8" strokeLinecap="round" strokeDasharray="264" strokeDashoffset="92" />
               <defs>
                 <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -208,11 +208,11 @@ const HomePage = () => {
               { label: "Editorial Reading", done: false },
               { label: "Answer Writing", done: false },
             ].map((task) => (
-              <div key={task.label} className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all ${task.done ? 'bg-purple-500/10 border border-purple-500/15' : 'bg-white/5 border border-white/5'}`}>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center ${task.done ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'border-2 border-gray-600'}`}>
+              <div key={task.label} className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all ${task.done ? 'bg-[#A855F7]/10 border border-[#A855F7]/20' : 'bg-[#0D0D0D]/50 border border-white/5'}`}>
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center ${task.done ? 'bg-gradient-to-r from-[#A855F7] to-[#EC4899]' : 'border-2 border-[#777777]'}`}>
                   {task.done && <CheckCircle className="w-3.5 h-3.5 text-white icon-glow-purple" />}
                 </div>
-                <span className={`text-xs font-medium ${task.done ? 'text-purple-300 line-through' : 'text-gray-300'}`}>{task.label}</span>
+                <span className={`text-xs font-medium ${task.done ? 'text-[#C084FC] line-through' : 'text-[#B3B3B3]'}`}>{task.label}</span>
               </div>
             ))}
           </div>
@@ -220,7 +220,7 @@ const HomePage = () => {
 
         <button
           onClick={() => navigate('/courses')}
-          className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold py-3 rounded-xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full mt-4 bg-gradient-to-r from-[#A855F7] to-[#EC4899] text-white text-sm font-bold py-3 rounded-xl shadow-[0_0_25px_rgba(168,85,247,0.4)] hover:shadow-[0_0_35px_rgba(236,72,153,0.5)] transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           Continue Where You Left →
         </button>
@@ -231,9 +231,9 @@ const HomePage = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Our Programs</h2>
-            <p className="text-gray-500 text-[10px]">Choose your path to UPSC success</p>
+            <p className="text-[#777777] text-[10px]">Choose your path to UPSC success</p>
           </div>
-          <button onClick={() => navigate('/courses')} className="text-purple-400 text-xs font-bold link-underline">
+          <button onClick={() => navigate('/courses')} className="text-[#A855F7] text-xs font-bold link-underline">
             All Courses →
           </button>
         </div>
@@ -254,7 +254,7 @@ const HomePage = () => {
                 <item.icon className="w-5 h-5 text-white bounce-on-hover" />
               </div>
               <h4 className="font-bold text-sm text-white relative z-[1]">{item.label}</h4>
-              <p className="text-gray-500 text-[10px] mt-0.5 leading-relaxed relative z-[1]">{item.desc}</p>
+              <p className="text-[#777777] text-[10px] mt-0.5 leading-relaxed relative z-[1]">{item.desc}</p>
             </div>
           ))}
         </div>
@@ -263,27 +263,27 @@ const HomePage = () => {
       {/* ══ LIVE CLASS CARD ══ */}
       {upcomingLive.length > 0 && (
         <div className="reveal glass-card rounded-3xl p-5 neon-border relative overflow-hidden animate-glow-breathe">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-pink-600/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#EC4899]/15 rounded-full blur-3xl pointer-events-none" />
           <div className="flex items-center justify-between mb-3 relative z-10">
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
               <span className="text-red-400 text-xs font-bold uppercase tracking-wider">Live Now</span>
             </div>
-            <button onClick={() => navigate('/live-classes')} className="text-purple-400 text-xs font-bold link-underline flex items-center gap-1">
+            <button onClick={() => navigate('/live-classes')} className="text-[#A855F7] text-xs font-bold link-underline flex items-center gap-1">
               View all <ChevronRight className="w-3.5 h-3.5 icon-glow-purple" />
             </button>
           </div>
           <div className="relative z-10">
             <h3 className="text-white font-bold text-base">{upcomingLive[0]?.title || "Upcoming Live Class"}</h3>
-            <p className="text-gray-400 text-xs mt-1">{upcomingLive[0]?.subject || "Subject"}</p>
+            <p className="text-[#B3B3B3] text-xs mt-1">{upcomingLive[0]?.subject || "Subject"}</p>
             <div className="flex items-center gap-3 mt-3">
               <button
                 onClick={() => navigate('/live-classes')}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-[#A855F7] to-[#EC4899] text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-[0_0_25px_rgba(168,85,247,0.4)] hover:shadow-[0_0_35px_rgba(236,72,153,0.5)] transition-all flex items-center gap-2"
               >
                 <Play className="w-3.5 h-3.5 icon-glow-purple" /> Join Now
               </button>
-              <span className="text-gray-500 text-[10px]">
+              <span className="text-[#777777] text-[10px]">
                 <Clock className="w-3 h-3 inline mr-1 icon-glow-purple" />
                 {upcomingLive[0]?.scheduled_time ? new Date(upcomingLive[0].scheduled_time).toLocaleTimeString() : "Coming soon"}
               </span>
@@ -292,72 +292,116 @@ const HomePage = () => {
         </div>
       )}
 
-      {/* ══ ABOUT INSTRUCTOR ══ */}
+      {/* ══ ABOUT INSTRUCTORS ══ */}
       <div className="reveal glass-card rounded-3xl p-5 neon-border overflow-hidden relative">
-        <div className="absolute -right-8 -top-8 w-32 h-32 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-8 -top-8 w-32 h-32 bg-[#A855F7]/15 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10">
-          <div className="flex items-start gap-4">
-            <div className="relative shrink-0">
-              <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-purple-500/30 shadow-lg shadow-purple-500/20 animate-float-slow">
-                <img src={teacherBanner} alt="Nadiya Ma'am" className="w-full h-full object-cover object-top scale-110" />
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-[#12122a] flex items-center justify-center icon-container-glow">
-                <CheckCircle className="w-3 h-3 text-white icon-glow-purple" />
-              </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="font-bold text-base text-white">Nadiya Ma'am</h3>
-                <div className="bg-purple-500/20 text-purple-400 text-[9px] font-bold px-2 py-0.5 rounded-full border border-purple-500/20">Verified</div>
-              </div>
-              <p className="text-gray-400 text-xs">UPSC CSE Mentor · Polity, History & GS</p>
-              <div className="flex items-center gap-1 mt-1">
-                {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 text-yellow-400 fill-yellow-400 icon-glow-purple" />)}
-                <span className="text-[10px] text-gray-500 ml-1">4.9 · 2,500+ students</span>
-              </div>
-            </div>
-          </div>
+          <h2 className="text-lg font-bold text-white mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>Our Instructors</h2>
+          
+          {/* Static list of teachers with their courses */}
+          {[
+            {
+              name: "Nadiya Ma'am",
+              expertise: "Polity, History & GS",
+              years: "10+ Years Mentoring",
+              students: "2,500+ Students",
+              success: "92% Success Rate",
+              image: teacherBanner
+            },
+            {
+              name: "Shivam Sir",
+              expertise: "Economics, Geography & Current Affairs",
+              years: "8+ Years Mentoring",
+              students: "1,800+ Students",
+              success: "89% Success Rate",
+              image: null
+            }
+          ].map((teacher, idx) => {
+            const teacherCourses = courses.filter(c => c.instructor === teacher.name);
+            return (
+              <div key={teacher.name} className="mb-6 last:mb-0">
+                <div className="flex items-start gap-4 mb-3">
+                  <div className="relative shrink-0">
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-[#A855F7]/40 shadow-[0_0_25px_rgba(168,85,247,0.3)] animate-float-slow bg-gradient-to-br from-[#A855F7]/20 to-[#EC4899]/20 flex items-center justify-center">
+                      {teacher.image ? (
+                        <img src={teacher.image} alt={teacher.name} className="w-full h-full object-cover object-top scale-110" />
+                      ) : (
+                        <span className="text-2xl">{teacher.name.charAt(0)}</span>
+                      )}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-[#050505] flex items-center justify-center icon-container-glow">
+                      <CheckCircle className="w-3 h-3 text-white icon-glow-purple" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h3 className="font-bold text-base text-white">{teacher.name}</h3>
+                      <div className="bg-[#A855F7]/20 text-[#A855F7] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[#A855F7]/30">Verified</div>
+                    </div>
+                    <p className="text-[#B3B3B3] text-xs">UPSC CSE Mentor · {teacher.expertise}</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 text-yellow-400 fill-yellow-400 icon-glow-purple" />)}
+                      <span className="text-[10px] text-[#777777] ml-1">4.9 · {teacher.students}</span>
+                    </div>
+                  </div>
+                </div>
 
-          {/* Credentials */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 stagger">
-            {[
-              { icon: GraduationCap, label: "10+ Years Mentoring",    bg: "bg-purple-500/10", border: "border-purple-500/15", text: "text-purple-400" },
-              { icon: Medal,         label: "45+ UPSC Clearances",    bg: "bg-amber-500/10",  border: "border-amber-500/15",  text: "text-amber-400" },
-              { icon: Users,         label: "2,500+ Students",        bg: "bg-pink-500/10",   border: "border-pink-500/15",   text: "text-pink-400" },
-              { icon: Award,         label: "92% Success Rate",       bg: "bg-emerald-500/10", border: "border-emerald-500/15", text: "text-emerald-400" },
-            ].map((c) => (
-              <div key={c.label} className={`flex items-center gap-2 ${c.bg} border ${c.border} rounded-xl p-2.5 hover-scale-sm press`}>
-                <c.icon className={`w-3.5 h-3.5 ${c.text} shrink-0 icon-glow-purple`} />
-                <span className="text-[10px] font-semibold text-gray-300">{c.label}</span>
-              </div>
-            ))}
-          </div>
+                {/* Credentials */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3 stagger">
+                  {[
+                    { icon: GraduationCap, label: teacher.years,    bg: "bg-[#A855F7]/10", border: "border-[#A855F7]/20", text: "text-[#A855F7]" },
+                    { icon: Medal,         label: "45+ UPSC Clearances",    bg: "bg-amber-500/10",  border: "border-amber-500/20",  text: "text-amber-400" },
+                    { icon: Users,         label: teacher.students,        bg: "bg-[#EC4899]/10",   border: "border-[#EC4899]/20",   text: "text-[#EC4899]" },
+                    { icon: Award,         label: teacher.success,       bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400" },
+                  ].map((c) => (
+                    <div key={c.label} className={`flex items-center gap-2 ${c.bg} border ${c.border} rounded-xl p-2.5 hover-scale-sm press`}>
+                      <c.icon className={`w-3.5 h-3.5 ${c.text} shrink-0 icon-glow-purple`} />
+                      <span className="text-[10px] font-semibold text-[#B3B3B3]">{c.label}</span>
+                    </div>
+                  ))}
+                </div>
 
-          {/* Expertise */}
-          <div className="mt-3 pt-3 border-t border-purple-500/10">
-            <p className="text-[9px] text-gray-500 font-semibold uppercase tracking-wide mb-2">Expertise</p>
-            <div className="flex flex-wrap gap-1.5">
-              {["Polity", "History", "Geography", "Economics", "Current Affairs", "Essay", "CSAT"].map((tag) => (
-                <span key={tag} className="bg-purple-500/10 text-purple-400 text-[9px] font-bold px-2.5 py-0.5 rounded-full border border-purple-500/15 hover-scale-sm">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
+                {/* Teacher's Courses */}
+                {teacherCourses.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-[#A855F7]/20">
+                    <p className="text-[9px] text-[#777777] font-semibold uppercase tracking-wide mb-2">Courses by {teacher.name}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {teacherCourses.map(course => (
+                        <div
+                          key={course.id}
+                          onClick={() => navigate(`/courses/${course.id}`)}
+                          className="flex items-center gap-3 p-2.5 rounded-xl bg-[#0D0D0D]/50 border border-[#A855F7]/20 hover:border-[#A855F7]/40 transition-all cursor-pointer hover-scale-sm press"
+                        >
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#A855F7]/20 to-[#EC4899]/20 flex items-center justify-center text-xl shrink-0">
+                            {course.thumbnail_emoji || "📚"}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-xs text-white truncate">{course.title}</h4>
+                            <p className="text-[10px] text-[#777777]">{course.category}</p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-[#A855F7] shrink-0 icon-glow-purple" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* ══ WHY CHOOSE US ══ */}
       <div className="reveal glass-card rounded-3xl p-5 neon-border">
         <h2 className="text-lg font-bold text-white mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Why Choose Us?</h2>
-        <p className="text-gray-500 text-xs mb-4">Smart, effective, proven UPSC prep</p>
+        <p className="text-[#777777] text-xs mb-4">Smart, effective, proven UPSC prep</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {[
-            { icon: Brain,    title: "Concept-First Approach",  desc: "Deep understanding over rote learning",     color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/15" },
-            { icon: FileText, title: "Smart Notes",             desc: "AI-enhanced notes with visual mnemonics",   color: "text-pink-400",   bg: "bg-pink-500/10",   border: "border-pink-500/15" },
-            { icon: Pen,      title: "Answer Writing Practice", desc: "Daily practice with mentor feedback",        color: "text-amber-400",  bg: "bg-amber-500/10",  border: "border-amber-500/15" },
-            { icon: Heart,    title: "Community Support",       desc: "Connect with fellow aspirants 24/7",        color: "text-rose-400",   bg: "bg-rose-500/10",   border: "border-rose-500/15" },
-            { icon: MessageCircle, title: "Personal Mentorship", desc: "1-on-1 guidance from UPSC experts",        color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/15" },
+            { icon: Brain,    title: "Concept-First Approach",  desc: "Deep understanding over rote learning",     color: "text-[#A855F7]", bg: "bg-[#A855F7]/10", border: "border-[#A855F7]/20" },
+            { icon: FileText, title: "Smart Notes",             desc: "AI-enhanced notes with visual mnemonics",   color: "text-[#EC4899]",   bg: "bg-[#EC4899]/10",   border: "border-[#EC4899]/20" },
+            { icon: Pen,      title: "Answer Writing Practice", desc: "Daily practice with mentor feedback",        color: "text-amber-400",  bg: "bg-amber-500/10",  border: "border-amber-500/20" },
+            { icon: Heart,    title: "Community Support",       desc: "Connect with fellow aspirants 24/7",        color: "text-rose-400",   bg: "bg-rose-500/10",   border: "border-rose-500/20" },
+            { icon: MessageCircle, title: "Personal Mentorship", desc: "1-on-1 guidance from UPSC experts",        color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
           ].map((f, i) => (
             <div key={f.title} className={`reveal-left flex items-center gap-3 group-item press rounded-xl px-3 py-3 ${f.bg} border ${f.border} transition-all hover:scale-[1.02] spotlight-card`} style={{ transitionDelay: `${i * 40}ms` }}>
               <div className={`w-10 h-10 rounded-xl ${f.bg} flex items-center justify-center shrink-0 relative z-[1] icon-glass`}>
@@ -365,9 +409,9 @@ const HomePage = () => {
               </div>
               <div className="flex-1 min-w-0 relative z-[1]">
                 <h4 className="font-semibold text-sm text-white">{f.title}</h4>
-                <p className="text-gray-500 text-[10px]">{f.desc}</p>
+                <p className="text-[#777777] text-[10px]">{f.desc}</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-600 shrink-0 relative z-[1] icon-glow-purple" />
+              <ChevronRight className="w-4 h-4 text-[#777777] shrink-0 relative z-[1] icon-glow-purple" />
             </div>
           ))}
         </div>
@@ -378,7 +422,7 @@ const HomePage = () => {
         <div className="reveal">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-bold text-base text-white">Announcements</h3>
-            <button onClick={() => navigate("/notifications")} className="text-purple-400 text-xs font-semibold link-underline flex items-center gap-1">
+            <button onClick={() => navigate("/notifications")} className="text-[#A855F7] text-xs font-semibold link-underline flex items-center gap-1">
               View all <ChevronRight className="w-3.5 h-3.5 icon-glow-purple" />
             </button>
           </div>
@@ -390,15 +434,15 @@ const HomePage = () => {
                 style={{ transitionDelay: `${i * 50}ms` }}
               >
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                  a.type === "info" ? "bg-purple-500/15" : a.type === "success" ? "bg-emerald-500/15" : "bg-amber-500/15"
+                  a.type === "info" ? "bg-[#A855F7]/15" : a.type === "success" ? "bg-emerald-500/15" : "bg-amber-500/15"
                 } icon-glass`}>
                   <Bell className={`w-4 h-4 ${
-                    a.type === "info" ? "text-purple-400 icon-glow-purple" : a.type === "success" ? "text-emerald-400 icon-glow-purple" : "text-amber-400 icon-glow-purple"
+                    a.type === "info" ? "text-[#A855F7] icon-glow-purple" : a.type === "success" ? "text-emerald-400 icon-glow-purple" : "text-amber-400 icon-glow-purple"
                   }`} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h4 className="font-semibold text-sm text-white">{a.title}</h4>
-                  <p className="text-gray-500 text-xs line-clamp-1 mt-0.5">{a.message}</p>
+                  <p className="text-[#777777] text-xs line-clamp-1 mt-0.5">{a.message}</p>
                 </div>
               </div>
             ))}
@@ -413,7 +457,7 @@ const HomePage = () => {
             <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>Student Wall</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
               {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 text-yellow-400 fill-yellow-400" />)}
-              <span className="text-[10px] font-bold text-gray-500 ml-1">4.9/5 · 500+ Reviews</span>
+              <span className="text-[10px] font-bold text-[#777777] ml-1">4.9/5 · 500+ Reviews</span>
             </div>
           </div>
         </div>
@@ -429,19 +473,19 @@ const HomePage = () => {
                     <Medal className="w-2.5 h-2.5" />
                     {r.rank}
                   </div>
-                  <span className="text-[10px] text-gray-500">{r.year}</span>
+                  <span className="text-[10px] text-[#777777]">{r.year}</span>
                 </div>
-                <Quote className="w-6 h-6 text-purple-500/30 mb-1.5" />
-                <p className="text-gray-400 text-xs leading-relaxed mb-3">"{r.text}"</p>
-                <div className="flex items-center gap-2.5 pt-2.5 border-t border-purple-500/10">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xs shadow-md shrink-0">
+                <Quote className="w-6 h-6 text-[#A855F7]/30 mb-1.5" />
+                <p className="text-[#B3B3B3] text-xs leading-relaxed mb-3">"{r.text}"</p>
+                <div className="flex items-center gap-2.5 pt-2.5 border-t border-[#A855F7]/20">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#A855F7] to-[#EC4899] flex items-center justify-center text-white font-bold text-xs shadow-md shrink-0">
                     {r.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-bold text-white">{r.name}</p>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-2.5 h-2.5 text-gray-600" />
-                      <p className="text-[10px] text-gray-500">{r.location}</p>
+                      <MapPin className="w-2.5 h-2.5 text-[#777777]" />
+                      <p className="text-[10px] text-[#777777]">{r.location}</p>
                     </div>
                   </div>
                   <div className="flex gap-0.5">
@@ -457,13 +501,13 @@ const HomePage = () => {
       {/* ══ FAQ SECTION ══ */}
       <div className="reveal glass-card rounded-3xl p-5 neon-border">
         <h2 className="text-lg font-bold text-white mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>Frequently Asked Questions</h2>
-        <p className="text-gray-500 text-xs mb-4">Everything you need to know before enrolling</p>
+        <p className="text-[#777777] text-xs mb-4">Everything you need to know before enrolling</p>
         <div className="space-y-2">
           {faqs.map((faq, i) => (
             <div
               key={i}
               className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
-                openFaq === i ? 'border-purple-500/30 shadow-sm shadow-purple-500/10 bg-purple-500/5' : 'border-purple-500/10 bg-white/[0.02]'
+                openFaq === i ? 'border-[#A855F7]/40 shadow-sm shadow-[#A855F7]/15 bg-[#A855F7]/5' : 'border-[#A855F7]/20 bg-[#0D0D0D]/30'
               }`}
             >
               <button
@@ -472,11 +516,11 @@ const HomePage = () => {
               >
                 <span className="text-sm font-semibold text-white leading-snug">{faq.q}</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-purple-400 shrink-0 transition-transform duration-300 ${openFaq === i ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 text-[#A855F7] shrink-0 transition-transform duration-300 ${openFaq === i ? 'rotate-180' : ''}`}
                 />
               </button>
               <div className={`faq-answer ${openFaq === i ? 'open' : ''}`}>
-                <p className="text-gray-400 text-xs leading-relaxed px-4 pb-3.5">{faq.a}</p>
+                <p className="text-[#B3B3B3] text-xs leading-relaxed px-4 pb-3.5">{faq.a}</p>
               </div>
             </div>
           ))}
@@ -484,15 +528,15 @@ const HomePage = () => {
       </div>
 
       {/* ══ FINAL CTA / MOTIVATION BANNER ══ */}
-      <div className="reveal relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-900/80 via-[#1a1040] to-pink-900/50 p-6 shadow-2xl shadow-purple-900/30 text-center neon-border animate-gradient-shift" style={{ background: 'linear-gradient(135deg, rgba(88,28,135,0.8), rgba(26,16,64,1), rgba(131,24,67,0.5))', backgroundSize: '200% 200%' }}>
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-600/15 rounded-full blur-3xl animate-float pointer-events-none" />
-        <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-pink-600/15 rounded-full blur-3xl animate-float-reverse pointer-events-none" />
+      <div className="reveal relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#A855F7]/80 via-[#1a1040] to-[#EC4899]/50 p-6 shadow-[0_0_40px_rgba(168,85,247,0.3)] text-center neon-border animate-gradient-shift" style={{ background: 'linear-gradient(135deg, rgba(168,85,247,0.8), rgba(26,16,64,1), rgba(236,72,153,0.5))', backgroundSize: '200% 200%' }}>
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#A855F7]/20 rounded-full blur-3xl animate-float pointer-events-none" />
+        <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-[#EC4899]/20 rounded-full blur-3xl animate-float-reverse pointer-events-none" />
         <div className="relative z-10">
-          <p className="text-purple-300/70 text-[10px] font-semibold uppercase tracking-widest mb-2">Ready to Transform?</p>
+          <p className="text-[#C084FC]/70 text-[10px] font-semibold uppercase tracking-widest mb-2">Ready to Transform?</p>
           <h2 className="text-white font-extrabold text-xl mb-1 animate-text-glow" style={{ fontFamily: 'Poppins, sans-serif' }}>
             "The future belongs to those<br />who <span className="text-shimmer">prepare</span> for it today"
           </h2>
-          <p className="text-gray-400 text-xs mb-5">Join 50K+ aspirants on the path to IAS · First 2 lectures free</p>
+          <p className="text-[#B3B3B3] text-xs mb-5">Join 50K+ aspirants on the path to IAS · First 2 lectures free</p>
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => navigate('/courses')}
@@ -502,7 +546,7 @@ const HomePage = () => {
             </button>
             <button
               onClick={() => navigate('/live-classes')}
-              className="bg-white/10 text-white text-sm font-semibold px-6 py-3.5 rounded-full border border-purple-400/30 hover:bg-white/15 transition-all press"
+              className="bg-[#0D0D0D]/50 text-white text-sm font-semibold px-6 py-3.5 rounded-full border border-[#A855F7]/30 hover:bg-[#0D0D0D]/70 hover:border-[#A855F7]/50 transition-all press shadow-[0_0_15px_rgba(168,85,247,0.1)]"
             >
               Watch Demo
             </button>
@@ -515,15 +559,15 @@ const HomePage = () => {
         className="reveal glass-card rounded-3xl p-4 cursor-pointer flex items-center gap-4 card-interactive ripple neon-glow neon-border"
         onClick={() => navigate("/results")}
       >
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 shrink-0 animate-float-slow">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#A855F7] to-[#EC4899] flex items-center justify-center shadow-[0_0_25px_rgba(168,85,247,0.4)] shrink-0 animate-float-slow">
           <TrendingUp className="w-6 h-6 text-white" />
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="font-bold text-sm text-white">My Performance</h4>
-          <p className="text-gray-500 text-xs">Track quiz scores & analytics</p>
+          <p className="text-[#777777] text-xs">Track quiz scores & analytics</p>
         </div>
-        <div className="w-8 h-8 rounded-full bg-purple-500/15 flex items-center justify-center hover-scale border border-purple-500/20">
-          <ChevronRight className="w-4 h-4 text-purple-400" />
+        <div className="w-8 h-8 rounded-full bg-[#A855F7]/15 flex items-center justify-center hover-scale border border-[#A855F7]/30">
+          <ChevronRight className="w-4 h-4 text-[#A855F7]" />
         </div>
       </div>
 
@@ -531,11 +575,11 @@ const HomePage = () => {
       <div className="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-40">
         <button 
           onClick={() => navigate('/doubts')}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shadow-2xl shadow-purple-500/40 hover:scale-110 transition-all animate-float-slow neon-glow-purple animate-glow-breathe"
+          className="w-14 h-14 rounded-full bg-gradient-to-r from-[#A855F7] to-[#EC4899] flex items-center justify-center shadow-[0_0_35px_rgba(168,85,247,0.5)] hover:scale-110 transition-all animate-float-slow neon-glow-purple animate-glow-breathe"
         >
           <Brain className="w-6 h-6 text-white" />
         </button>
-        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-[#0a0a1a] animate-pulse" />
+        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-[#050505] animate-pulse" />
       </div>
 
     </div>

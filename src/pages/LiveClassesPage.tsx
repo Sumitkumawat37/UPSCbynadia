@@ -47,32 +47,32 @@ const LiveClassesPage = () => {
 
   return (
     <div className="space-y-5 animate-slide-up" ref={scrollRef}>
-      <h2 className="text-xl font-bold animate-text-glow">Live Classes</h2>
+      <h2 className="text-xl font-bold text-white animate-text-glow" style={{ fontFamily: 'Poppins, sans-serif' }}>Live Classes</h2>
 
       {upcoming.length > 0 && (
         <div>
-          <h3 className="font-bold text-sm mb-2 text-muted-foreground uppercase tracking-wide">Upcoming</h3>
+          <h3 className="font-bold text-sm mb-2 text-[#C084FC] uppercase tracking-wide">Upcoming</h3>
           <div className="space-y-3">
             {upcoming.map((cls) => (
-              <Card key={cls.id} className="p-4 reveal spotlight-card" style={{ transitionDelay: `${upcoming.indexOf(cls) * 40}ms` }}>
+              <Card key={cls.id} className="p-4 reveal spotlight-card neon-border" style={{ transitionDelay: `${upcoming.indexOf(cls) * 40}ms` }}>
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 icon-glass">
-                    <Video className="w-5 h-5 text-primary icon-glow-purple" />
+                  <div className="w-10 h-10 rounded-xl bg-[#A855F7]/15 flex items-center justify-center shrink-0 icon-glass border border-[#A855F7]/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+                    <Video className="w-5 h-5 text-[#A855F7] icon-glow-purple" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-sm">{cls.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs text-[#B3B3B3] mt-0.5">
                       {(cls as any).courses?.title} · {(cls as any).chapters?.title}
                     </p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-3 mt-2 text-xs text-[#777777]">
                       <span className="flex items-center gap-1"><Calendar className="w-3 h-3 icon-glow-purple" /> {formatDate(cls.scheduled_at)}</span>
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3 icon-glow-purple" /> {formatTime(cls.scheduled_at)}</span>
                     </div>
-                    <Button size="sm" className="mt-3 w-full" onClick={() => handleJoin(cls)}>
+                    <Button size="sm" className="mt-3 w-full bg-gradient-to-r from-[#A855F7] to-[#EC4899] text-white border-0 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)]" onClick={() => handleJoin(cls)}>
                       <ExternalLink className="w-3 h-3 mr-1 icon-glow-purple" /> Join Live Class
                     </Button>
                   </div>
-                  <Badge className="bg-primary/10 text-primary border-0 shrink-0">Live</Badge>
+                  <Badge className="bg-[#A855F7]/20 text-[#A855F7] border border-[#A855F7]/30 shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.2)]">Live</Badge>
                 </div>
               </Card>
             ))}
@@ -82,18 +82,18 @@ const LiveClassesPage = () => {
 
       {completed.length > 0 && (
         <div>
-          <h3 className="font-bold text-sm mb-2 text-muted-foreground uppercase tracking-wide">Past Classes</h3>
+          <h3 className="font-bold text-sm mb-2 text-[#C084FC] uppercase tracking-wide">Past Classes</h3>
           <div className="space-y-2">
             {completed.map((cls) => (
-              <Card key={cls.id} className="p-3 flex items-center gap-3 reveal" style={{ transitionDelay: `${completed.indexOf(cls) * 30}ms` }}>
-                <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center shrink-0 icon-glass">
-                  <CheckCircle className="w-4 h-4 text-success icon-glow-purple" />
+              <Card key={cls.id} className="p-3 flex items-center gap-3 reveal neon-border" style={{ transitionDelay: `${completed.indexOf(cls) * 30}ms` }}>
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0 icon-glass border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                  <CheckCircle className="w-4 h-4 text-emerald-400 icon-glow-purple" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-sm truncate">{cls.title}</h4>
-                  <p className="text-xs text-muted-foreground">{formatDate(cls.scheduled_at)}</p>
+                  <p className="text-xs text-[#777777]">{formatDate(cls.scheduled_at)}</p>
                 </div>
-                <Badge variant="secondary" className="text-[10px]">Done</Badge>
+                <Badge variant="secondary" className="text-[10px] bg-[#0D0D0D]/50 text-[#777777] border border-[#A855F7]/20">Done</Badge>
               </Card>
             ))}
           </div>

@@ -34,7 +34,7 @@ export function BottomNav() {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe animate-slide-in-bounce">
       <div className="mx-3 mb-3">
-        <div className="bg-[#0d0d20]/90 backdrop-blur-xl rounded-3xl border border-purple-500/15 shadow-xl shadow-purple-900/30 px-2 py-2 animate-glow-breathe" style={{ animationDuration: '4s' }}>
+        <div className="bg-[#050505]/90 backdrop-blur-xl rounded-3xl border border-[#A855F7]/30 shadow-[0_0_30px_rgba(168,85,247,0.2)] px-2 py-2 animate-glow-breathe" style={{ animationDuration: '4s' }}>
           <div className="flex justify-around items-center">
             {items.map((item) => {
               const exactRoutes = ["/", "/admin", "/superadmin"];
@@ -50,18 +50,18 @@ export function BottomNav() {
                 >
                   <div className={`w-9 h-9 rounded-2xl flex items-center justify-center transition-all duration-300 ${
                     isActive
-                      ? "bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg shadow-purple-500/40 scale-110 animate-elastic"
-                      : "bg-transparent hover:bg-white/5"
+                      ? "bg-gradient-to-r from-[#A855F7] to-[#EC4899] shadow-[0_0_20px_rgba(168,85,247,0.5)] scale-110 animate-elastic"
+                      : "bg-transparent hover:bg-[#0D0D0D]"
                   }`}>
                     <item.icon className={`transition-all duration-200 ${
-                      isActive ? "text-white animate-bounce-icon icon-glow-purple" : "text-gray-500"
+                      isActive ? "text-white animate-bounce-icon icon-glow-purple" : "text-[#B3B3B3]"
                     }`} style={{ width: '18px', height: '18px' }} />
                   </div>
                   <span className={`text-[10px] font-semibold transition-colors duration-200 ${
-                    isActive ? "text-purple-400" : "text-gray-500"
+                    isActive ? "text-[#A855F7]" : "text-[#777777]"
                   }`}>{item.label}</span>
                   {isActive && (
-                    <div className="absolute -bottom-0.5 w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse-ring" />
+                    <div className="absolute -bottom-0.5 w-1.5 h-1.5 rounded-full bg-[#A855F7] animate-pulse-ring shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
                   )}
                 </NavLink>
               );

@@ -126,12 +126,12 @@ export function AppHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-[#0d0d20]/80 backdrop-blur-xl border-b border-purple-500/10">
+    <header className="sticky top-0 z-30 bg-[#050505]/90 backdrop-blur-xl border-b border-[#A855F7]/20 shadow-[0_0_30px_rgba(168,85,247,0.1)]">
       <div className="px-4 md:px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Logo — mobile only (desktop uses sidebar) */}
           <div className="flex items-center gap-2.5 md:hidden">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#A855F7] to-[#EC4899] flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)]">
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -140,10 +140,10 @@ export function AppHeader() {
               </h1>
               <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold ${
                 role === "super_admin"
-                  ? "bg-amber-500/20 text-amber-400"
+                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                   : role === "admin"
-                  ? "bg-purple-500/20 text-purple-400"
-                  : "bg-pink-500/20 text-pink-400"
+                  ? "bg-[#A855F7]/20 text-[#A855F7] border border-[#A855F7]/30"
+                  : "bg-[#EC4899]/20 text-[#EC4899] border border-[#EC4899]/30"
               }`}>
                 {role === "super_admin" ? "Super Admin" : role === "admin" ? "Teacher" : "Student"}
               </div>
@@ -153,14 +153,14 @@ export function AppHeader() {
           {/* Desktop: search bar + greeting */}
           <div className="hidden md:flex items-center gap-4 flex-1">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#B3B3B3]" />
               <input
                 type="text"
                 placeholder="Search courses, lectures, notes..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-purple-500/15 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:bg-white/10 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-[#0D0D0D] border border-[#A855F7]/30 rounded-xl text-sm text-white placeholder-[#777777] focus:outline-none focus:ring-2 focus:ring-[#A855F7]/50 focus:bg-[#121212] focus:border-[#A855F7] transition-all shadow-[0_0_15px_rgba(168,85,247,0.1)]"
               />
             </div>
-            <p className="text-sm font-semibold text-gray-300 whitespace-nowrap" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <p className="text-sm font-semibold text-[#B3B3B3] whitespace-nowrap" style={{ fontFamily: 'Poppins, sans-serif' }}>
               Welcome back, <span className="gradient-text">{user?.name?.split(' ')[0] ?? 'there'}</span>
             </p>
           </div>
@@ -170,11 +170,11 @@ export function AppHeader() {
             {/* Notifications */}
             <button
               onClick={handleBellClick}
-              className="relative w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-purple-500/10 transition-all duration-200 flex items-center justify-center"
+              className="relative w-10 h-10 rounded-xl bg-[#0D0D0D] hover:bg-[#121212] border border-[#A855F7]/20 hover:border-[#A855F7]/40 transition-all duration-300 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_25px_rgba(168,85,247,0.2)]"
             >
-              <Bell className="w-5 h-5 text-gray-400" />
+              <Bell className="w-5 h-5 text-[#B3B3B3]" />
               {unread > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold shadow-md shadow-purple-500/30">
+                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-gradient-to-r from-[#A855F7] to-[#EC4899] rounded-full text-[10px] text-white flex items-center justify-center font-bold shadow-[0_0_15px_rgba(168,85,247,0.5)] animate-pulse">
                   {unread > 9 ? "9+" : unread}
                 </span>
               )}
@@ -183,15 +183,15 @@ export function AppHeader() {
             {/* Profile — mobile only (sidebar handles it on desktop) */}
             <button
               onClick={() => navigate("/profile")}
-              className="md:hidden w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-purple-500/10 transition-all duration-200 flex items-center justify-center"
+              className="md:hidden w-10 h-10 rounded-xl bg-[#0D0D0D] hover:bg-[#121212] border border-[#A855F7]/20 hover:border-[#A855F7]/40 transition-all duration-300 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_25px_rgba(168,85,247,0.2)]"
             >
-              <User className="w-5 h-5 text-gray-400" />
+              <User className="w-5 h-5 text-[#B3B3B3]" />
             </button>
 
             {/* Logout — mobile only */}
             <button
               onClick={() => { logout(); navigate("/login"); }}
-              className="md:hidden w-10 h-10 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/10 transition-all duration-200 flex items-center justify-center"
+              className="md:hidden w-10 h-10 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 transition-all duration-300 flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_25px_rgba(239,68,68,0.3)]"
             >
               <LogOut className="w-5 h-5 text-red-400" />
             </button>

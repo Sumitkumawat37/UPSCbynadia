@@ -12,16 +12,20 @@
     ═══════════════════════════════════════════ */
 
     /* BACKGROUND COLORS */
-    --background-primary: #0f0f0f;
-    --background-secondary: #1a1a1a;
-    --background-card: rgba(255, 255, 255, 0.05);
-    --background-glass-blur: blur(12px);
+    --background-primary: #050505;
+    --background-secondary: #0D0D0D;
+    --background-elevated: #121212;
+    --background-card: rgba(15, 15, 20, 0.75);
+    --background-glass-overlay: rgba(255, 255, 255, 0.04);
+    --background-glass-blur: blur(18px);
 
     /* ACCENT COLORS */
-    --neon-purple: #8B5CF6;
-    --neon-pink: #EC4899;
-    --soft-violet: #A78BFA;
-    --gradient-primary: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+    --neon-purple: #A855F7;
+    --electric-pink: #EC4899;
+    --soft-violet: #C084FC;
+    --bright-magenta: #D946EF;
+    --gradient-primary: linear-gradient(135deg, #A855F7 0%, #EC4899 100%);
+    --gradient-secondary: linear-gradient(135deg, #7C3AED 0%, #D946EF 100%);
 
     /* TEXT COLORS */
     --text-primary: #FFFFFF;
@@ -41,9 +45,9 @@
     --border-width: 1px;
 
     /* SHADOW SYSTEM */
-    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.1);
-    --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --shadow-button: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-card: 0 0 30px rgba(168, 85, 247, 0.15);
+    --shadow-hover: 0 0 45px rgba(236, 72, 153, 0.22);
+    --shadow-button: 0 0 20px rgba(168, 85, 247, 0.3);
 
     /* SPACING SCALE */
     --spacing-1: 4px;
@@ -200,32 +204,34 @@
 
   /* Glassmorphism (Design System) */
   .glass {
-    background: rgba(255,255,255,0.05);
+    background: var(--background-glass-overlay);
     backdrop-filter: var(--background-glass-blur);
     -webkit-backdrop-filter: var(--background-glass-blur);
     border: var(--border-width) solid var(--border-color);
   }
   .glass-dark {
-    background: rgba(15, 10, 30, 0.7);
+    background: rgba(15, 15, 20, 0.85);
     backdrop-filter: var(--background-glass-blur);
     -webkit-backdrop-filter: var(--background-glass-blur);
-    border: 1px solid rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.1);
   }
   .glass-card {
     background: var(--background-card);
     backdrop-filter: var(--background-glass-blur);
     -webkit-backdrop-filter: var(--background-glass-blur);
-    border: var(--border-width) solid var(--border-color);
+    border: var(--border-width) solid rgba(255, 255, 255, 0.08);
+    box-shadow: var(--shadow-card);
   }
   .neon-border {
-    border: var(--border-width) solid rgba(168, 85, 247, 0.3);
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.1), inset 0 0 15px rgba(168, 85, 247, 0.05);
+    border: var(--border-width) solid rgba(168, 85, 247, 0.4);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.15), inset 0 0 20px rgba(168, 85, 247, 0.08);
   }
   .neon-glow-purple {
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(168, 85, 247, 0.1);
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.4), 0 0 50px rgba(168, 85, 247, 0.15);
   }
   .neon-glow-pink {
-    box-shadow: 0 0 20px rgba(236, 72, 153, 0.3), 0 0 40px rgba(236, 72, 153, 0.1);
+    box-shadow: 0 0 25px rgba(236, 72, 153, 0.4), 0 0 50px rgba(236, 72, 153, 0.15);
   }
 
   /* Blob decoration */

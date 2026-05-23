@@ -145,10 +145,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Sign out immediately — user must verify email before logging in
     await supabase.auth.signOut();
 
-    // Send verification email via nodemailer backend
+    // Send verification email via Vercel serverless function
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-      const res = await fetch(`${backendUrl}/api/v1/email/send-verification`, {
+      const res = await fetch('/api/email/send-verification', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, name, frontendUrl: window.location.origin }),
@@ -158,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error("Verification email error:", err);
       }
     } catch (fetchErr) {
-      console.error("Could not reach email backend:", fetchErr);
+      console.error("Could not reach email service:", fetchErr);
     }
 
     return true;
@@ -202,15 +201,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword = async (email: string): Promise<boolean> => {
     try {
-      // Send password reset email via backend using nodemailer
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-      const res = await fetch(`${backendUrl}/api/v1/email/password-reset`, {
+      // Send password reset email via Vercel serverless function
+      const res = await fetch('/api/email/send-password-reset', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          to: email, 
-          name: email.split('@')[0], // Use email username as name
-          resetUrl: `${window.location.origin}/reset-password` 
+          email, 
+          frontendUrl: window.location.origin 
         }),
       });
 
